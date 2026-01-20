@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tap to Reveal</title>
+
+  <!-- Prevent search engines -->
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #f6d365, #fda085);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 18px;
+      border: none;
+      border-radius: 30px;
+      background: #ff6f61;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .message {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #444;
+      line-height: 1.6;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 12px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>Tap to Reveal</h1>
+
+    <button onclick="reveal()">Tap Here</button>
+
+    <div id="content" class="hidden">
+
+      <!-- SECRET MESSAGE -->
+      <div class="message">
+        From being my friend…  
+        you slowly became my favorite person 💛
+      </div>
+
+      <!-- OPTIONAL VIDEO -->
+      <!-- Replace VIDEO_LINK_HERE -->
+      <video controls>
+        <source src="VIDEO_LINK_HERE" type="video/mp4">
+        Your browser does not support the video.
+      </video>
+
+    </div>
+  </div>
+
+  <script>
+    function reveal() {
+      document.querySelector("button").style.display = "none";
+      document.getElementById("content").classList.remove("hidden");
+    }
+  </script>
+
+</body>
+</html>
