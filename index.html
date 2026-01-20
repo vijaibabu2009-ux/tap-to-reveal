@@ -1,172 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Tap to Reveal</title>
+<meta charset="UTF-8">
+<title>Tap to Reveal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="robots" content="noindex, nofollow">
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-  <!-- Tamil Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tamil:wght@400;600&display=swap" rel="stylesheet">
+.container {
+  text-align: center;
+  max-width: 360px;
+  padding: 20px;
+}
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(circle at top, #ffe0c3, #f7b38c);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: "Segoe UI", sans-serif;
-    }
+.tap-box {
+  background: #d94f4f;
+  padding: 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 20px;
+}
 
-    .container {
-      background: #fff;
-      width: 90%;
-      max-width: 420px;
-      padding: 30px;
-      border-radius: 22px;
-      box-shadow: 0 30px 70px rgba(0,0,0,0.25);
-      text-align: center;
-    }
+.tap-box:hover {
+  background: #ff6b6b;
+}
 
-    /* Language buttons */
-    .lang-btn {
-      padding: 12px 20px;
-      margin: 8px;
-      border-radius: 25px;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      background: #444;
-      color: #fff;
-    }
+.hidden {
+  display: none;
+}
 
-    /* Tap button */
-    .tap-btn {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: #d94f4f;
-      color: white;
-      font-size: 18px;
-      border: none;
-      cursor: pointer;
-      animation: pulse 1.8s infinite;
-      margin: 20px auto;
-    }
+.message {
+  margin-top: 20px;
+  font-size: 18px;
+  line-height: 1.5;
+}
 
-    @keyframes pulse {
-      0%   { box-shadow: 0 0 0 0 rgba(217,79,79,0.7); }
-      70%  { box-shadow: 0 0 0 28px rgba(217,79,79,0); }
-      100% { box-shadow: 0 0 0 0 rgba(217,79,79,0); }
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: all 0.8s ease;
-    }
-
-    .reveal.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .message {
-      font-size: 17px;
-      line-height: 1.7;
-      margin-bottom: 16px;
-      color: #444;
-    }
-
-    .tamil {
-      font-family: 'Noto Serif Tamil', serif;
-    }
-
-    img.reveal-gif {
-      width: 100%;
-      max-height: 220px;
-      border-radius: 14px;
-      margin-top: 12px;
-    }
-  </style>
+video, img {
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 15px;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="container">
+<div class="container">
+  <h2 id="title">Tap to Reveal</h2>
 
-    <!-- LANGUAGE SELECT -->
-    <div id="langSelect">
-      <h3>Select Language</h3>
-      <button class="lang-btn" onclick="setLang('en')">English</button>
-      <button class="lang-btn" onclick="setLang('ta')">தமிழ்</button>
-    </div>
+  <!-- Optional GIF / Video -->
+  <img id="gif" src="Shot_1__202601202355.gif" class="hidden">
 
-    <!-- TAP SCREEN -->
-    <div id="tapScreen" class="hidden">
-      <h3 id="tapTitle">Tap to Reveal</h3>
-      <button class="tap-btn" onclick="reveal()">TAP</button>
-    </div>
-
-    <!-- REVEAL CONTENT -->
-    <div id="revealContent" class="hidden reveal">
-
-      <!-- ENGLISH MESSAGE -->
-      <div id="msgEn" class="message">
-        From being my friend…<br>
-        you slowly became my favorite person 💛
-      </div>
-
-      <!-- TAMIL MESSAGE -->
-      <div id="msgTa" class="message tamil hidden">
-        நண்பராக தொடங்கிய நம் பயணம்…<br>
-        இன்று என் மனதின் மிக முக்கியமான நபராக<br>
-        நீ மாறிவிட்டாய் 💛
-      </div>
-
-      <!-- GIF -->
-      <!-- Upload reveal.gif to GitHub repo -->
-      <img src="Shot_1__202601202355.gif" class="reveal-gif" alt="Reveal">
-
-    </div>
-
+  <div id="tapBox" class="tap-box">
+    👆 Tap Here
   </div>
 
-  <script>
-    let currentLang = "en";
+  <div id="message" class="message hidden"></div>
+</div>
 
-    function setLang(lang) {
-      currentLang = lang;
-      document.getElementById("langSelect").classList.add("hidden");
-      document.getElementById("tapScreen").classList.remove("hidden");
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-      if (lang === "ta") {
-        document.getElementById("tapTitle").innerText = "மறைந்துள்ள செய்தியை காண";
-        document.querySelector(".tap-btn").innerText = "தட்டவும்";
-      }
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const params = new URLSearchParams(window.location.search);
+const giftId = params.get("id");
+
+const tapBox = document.getElementById("tapBox");
+const messageBox = document.getElementById("message");
+const title = document.getElementById("title");
+const gif = document.getElementById("gif");
+
+if (!giftId) {
+  title.innerText = "Invalid Link";
+  tapBox.classList.add("hidden");
+}
+
+tapBox.addEventListener("click", () => {
+  db.collection("gifts").doc(giftId).get().then(doc => {
+    if (!doc.exists) {
+      title.innerText = "Gift not found";
+      tapBox.classList.add("hidden");
+      return;
     }
 
-    function reveal() {
-      document.getElementById("tapScreen").classList.add("hidden");
-      document.getElementById("revealContent").classList.remove("hidden");
+    const data = doc.data();
 
-      if (currentLang === "ta") {
-        document.getElementById("msgEn").classList.add("hidden");
-        document.getElementById("msgTa").classList.remove("hidden");
-      }
-
-      setTimeout(() => {
-        document.getElementById("revealContent").classList.add("show");
-      }, 50);
+    // Auto language
+    if (data.lang === "ta") {
+      title.innerText = "திறக்க தட்டவும்";
+      tapBox.innerText = "தட்டவும்";
     }
-  </script>
+
+    tapBox.classList.add("hidden");
+    gif.classList.remove("hidden");
+    messageBox.innerText = data.message;
+    messageBox.classList.remove("hidden");
+  });
+});
+</script>
 
 </body>
 </html>
