@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ta">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Tap to Reveal</title>
@@ -14,75 +14,86 @@
     body {
       margin: 0;
       height: 100vh;
-      font-family: 'Noto Serif Tamil', serif;
       background: radial-gradient(circle at top, #ffe0c3, #f7b38c);
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
+      font-family: "Segoe UI", sans-serif;
     }
 
     .container {
-      background: white;
+      background: #fff;
       width: 90%;
       max-width: 420px;
-      padding: 32px;
+      padding: 30px;
       border-radius: 22px;
       box-shadow: 0 30px 70px rgba(0,0,0,0.25);
       text-align: center;
     }
 
-    h1 {
-      margin-bottom: 26px;
-      color: #3b2f2f;
-      font-size: 22px;
-      font-weight: 600;
+    /* Language buttons */
+    .lang-btn {
+      padding: 12px 20px;
+      margin: 8px;
+      border-radius: 25px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      background: #444;
+      color: #fff;
     }
 
-    /* TAP BUTTON */
+    /* Tap button */
     .tap-btn {
-      width: 130px;
-      height: 130px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       background: #d94f4f;
       color: white;
       font-size: 18px;
       border: none;
       cursor: pointer;
-      box-shadow: 0 0 0 rgba(217,79,79, 0.7);
       animation: pulse 1.8s infinite;
-      font-family: 'Noto Serif Tamil', serif;
+      margin: 20px auto;
     }
 
     @keyframes pulse {
-      0%   { box-shadow: 0 0 0 0 rgba(217,79,79, 0.7); }
-      70%  { box-shadow: 0 0 0 28px rgba(217,79,79, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(217,79,79, 0); }
+      0%   { box-shadow: 0 0 0 0 rgba(217,79,79,0.7); }
+      70%  { box-shadow: 0 0 0 28px rgba(217,79,79,0); }
+      100% { box-shadow: 0 0 0 0 rgba(217,79,79,0); }
+    }
+
+    .hidden {
+      display: none;
     }
 
     .reveal {
       opacity: 0;
-      transform: translateY(40px);
-      transition: all 0.9s ease;
-      display: none;
+      transform: translateY(30px);
+      transition: all 0.8s ease;
     }
 
     .reveal.show {
-      display: block;
       opacity: 1;
       transform: translateY(0);
     }
 
     .message {
-      font-size: 18px;
-      line-height: 1.8;
-      color: #4a3b3b;
-      margin-bottom: 22px;
+      font-size: 17px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+      color: #444;
     }
 
-    video {
+    .tamil {
+      font-family: 'Noto Serif Tamil', serif;
+    }
+
+    img.reveal-gif {
       width: 100%;
-      border-radius: 16px;
+      max-height: 220px;
+      border-radius: 14px;
+      margin-top: 12px;
     }
   </style>
 </head>
@@ -90,32 +101,71 @@
 <body>
 
   <div class="container">
-    <h1>மறைந்துள்ள செய்தியை காண</h1>
 
-    <button class="tap-btn" id="tapBtn">தட்டவும்</button>
+    <!-- LANGUAGE SELECT -->
+    <div id="langSelect">
+      <h3>Select Language</h3>
+      <button class="lang-btn" onclick="setLang('en')">English</button>
+      <button class="lang-btn" onclick="setLang('ta')">தமிழ்</button>
+    </div>
 
-    <div class="reveal" id="revealBox">
-      <div class="message">
-        நண்பராக தொடங்கிய நம் பயணம்…<br>
-        இன்று என் மனதின்<br>
-        மிக முக்கியமான நபராக நீ மாறிவிட்டாய் 💛
+    <!-- TAP SCREEN -->
+    <div id="tapScreen" class="hidden">
+      <h3 id="tapTitle">Tap to Reveal</h3>
+      <button class="tap-btn" onclick="reveal()">TAP</button>
+    </div>
+
+    <!-- REVEAL CONTENT -->
+    <div id="revealContent" class="hidden reveal">
+
+      <!-- ENGLISH MESSAGE -->
+      <div id="msgEn" class="message">
+        From being my friend…<br>
+        you slowly became my favorite person 💛
       </div>
 
-      <!-- Optional Video -->
-      <!-- Replace VIDEO_LINK_HERE -->
-      <video controls>
-        <source src="VIDEO_LINK_HERE" type="video/mp4">
-      </video>
+      <!-- TAMIL MESSAGE -->
+      <div id="msgTa" class="message tamil hidden">
+        நண்பராக தொடங்கிய நம் பயணம்…<br>
+        இன்று என் மனதின் மிக முக்கியமான நபராக<br>
+        நீ மாறிவிட்டாய் 💛
+      </div>
+
+      <!-- GIF -->
+      <!-- Upload reveal.gif to GitHub repo -->
+      <img src="Shot_1__202601202355.gif" class="reveal-gif" alt="Reveal">
+
     </div>
+
   </div>
 
   <script>
-    document.getElementById("tapBtn").addEventListener("click", function () {
-      this.style.display = "none";
-      const box = document.getElementById("revealBox");
-      box.style.display = "block";
-      setTimeout(() => box.classList.add("show"), 50);
-    });
+    let currentLang = "en";
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById("langSelect").classList.add("hidden");
+      document.getElementById("tapScreen").classList.remove("hidden");
+
+      if (lang === "ta") {
+        document.getElementById("tapTitle").innerText = "மறைந்துள்ள செய்தியை காண";
+        document.querySelector(".tap-btn").innerText = "தட்டவும்";
+      }
+    }
+
+    function reveal() {
+      document.getElementById("tapScreen").classList.add("hidden");
+      document.getElementById("revealContent").classList.remove("hidden");
+
+      if (currentLang === "ta") {
+        document.getElementById("msgEn").classList.add("hidden");
+        document.getElementById("msgTa").classList.remove("hidden");
+      }
+
+      setTimeout(() => {
+        document.getElementById("revealContent").classList.add("show");
+      }, 50);
+    }
   </script>
 
 </body>
