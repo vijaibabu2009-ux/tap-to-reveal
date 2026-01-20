@@ -1,17 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ta">
 <head>
   <meta charset="UTF-8" />
   <title>Tap to Reveal</title>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
+
+  <!-- Tamil Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tamil:wght@400;600&display=swap" rel="stylesheet">
 
   <style>
     body {
       margin: 0;
       height: 100vh;
-      font-family: "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #ffecd2, #fcb69f);
+      font-family: 'Noto Serif Tamil', serif;
+      background: radial-gradient(circle at top, #ffe0c3, #f7b38c);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -23,42 +27,43 @@
       width: 90%;
       max-width: 420px;
       padding: 32px;
-      border-radius: 20px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+      border-radius: 22px;
+      box-shadow: 0 30px 70px rgba(0,0,0,0.25);
       text-align: center;
-      position: relative;
     }
 
     h1 {
-      margin-bottom: 24px;
-      color: #333;
+      margin-bottom: 26px;
+      color: #3b2f2f;
+      font-size: 22px;
+      font-weight: 600;
     }
 
     /* TAP BUTTON */
     .tap-btn {
-      width: 120px;
-      height: 120px;
+      width: 130px;
+      height: 130px;
       border-radius: 50%;
-      background: #ff6f61;
+      background: #d94f4f;
       color: white;
       font-size: 18px;
       border: none;
       cursor: pointer;
-      box-shadow: 0 0 0 rgba(255,111,97, 0.7);
+      box-shadow: 0 0 0 rgba(217,79,79, 0.7);
       animation: pulse 1.8s infinite;
+      font-family: 'Noto Serif Tamil', serif;
     }
 
     @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255,111,97, 0.7); }
-      70% { box-shadow: 0 0 0 25px rgba(255,111,97, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255,111,97, 0); }
+      0%   { box-shadow: 0 0 0 0 rgba(217,79,79, 0.7); }
+      70%  { box-shadow: 0 0 0 28px rgba(217,79,79, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(217,79,79, 0); }
     }
 
-    /* HIDDEN CONTENT */
     .reveal {
       opacity: 0;
       transform: translateY(40px);
-      transition: all 0.8s ease;
+      transition: all 0.9s ease;
       display: none;
     }
 
@@ -70,14 +75,14 @@
 
     .message {
       font-size: 18px;
-      line-height: 1.7;
-      color: #444;
-      margin-bottom: 20px;
+      line-height: 1.8;
+      color: #4a3b3b;
+      margin-bottom: 22px;
     }
 
     video {
       width: 100%;
-      border-radius: 14px;
+      border-radius: 16px;
     }
   </style>
 </head>
@@ -85,18 +90,19 @@
 <body>
 
   <div class="container">
-    <h1>Tap to Reveal</h1>
+    <h1>மறைந்துள்ள செய்தியை காண</h1>
 
-    <button class="tap-btn" id="tapBtn">TAP</button>
+    <button class="tap-btn" id="tapBtn">தட்டவும்</button>
 
     <div class="reveal" id="revealBox">
       <div class="message">
-        From being my friend…<br>
-        you slowly became my favorite person 💛
+        நண்பராக தொடங்கிய நம் பயணம்…<br>
+        இன்று என் மனதின்<br>
+        மிக முக்கியமான நபராக நீ மாறிவிட்டாய் 💛
       </div>
 
-      <!-- Optional video -->
-      <!-- Replace VIDEO_LINK -->
+      <!-- Optional Video -->
+      <!-- Replace VIDEO_LINK_HERE -->
       <video controls>
         <source src="VIDEO_LINK_HERE" type="video/mp4">
       </video>
