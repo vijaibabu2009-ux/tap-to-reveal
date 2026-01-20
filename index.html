@@ -1,102 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Tap to Reveal</title>
-
-  <!-- Prevent search engines -->
-  <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
 
   <style>
     body {
       margin: 0;
+      height: 100vh;
       font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, #f6d365, #fda085);
+      background: radial-gradient(circle at top, #ffecd2, #fcb69f);
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      text-align: center;
+      overflow: hidden;
     }
 
-    .card {
+    .container {
       background: white;
-      border-radius: 16px;
-      padding: 30px;
       width: 90%;
       max-width: 420px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      padding: 32px;
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+      text-align: center;
+      position: relative;
     }
 
     h1 {
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       color: #333;
     }
 
-    button {
-      padding: 14px 28px;
-      font-size: 18px;
-      border: none;
-      border-radius: 30px;
+    /* TAP BUTTON */
+    .tap-btn {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
       background: #ff6f61;
       color: white;
+      font-size: 18px;
+      border: none;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      box-shadow: 0 0 0 rgba(255,111,97, 0.7);
+      animation: pulse 1.8s infinite;
     }
 
-    button:hover {
-      transform: scale(1.05);
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(255,111,97, 0.7); }
+      70% { box-shadow: 0 0 0 25px rgba(255,111,97, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255,111,97, 0); }
     }
 
-    .hidden {
+    /* HIDDEN CONTENT */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s ease;
       display: none;
     }
 
+    .reveal.show {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
     .message {
-      margin-top: 20px;
       font-size: 18px;
+      line-height: 1.7;
       color: #444;
-      line-height: 1.6;
+      margin-bottom: 20px;
     }
 
     video {
       width: 100%;
-      border-radius: 12px;
-      margin-top: 20px;
+      border-radius: 14px;
     }
   </style>
 </head>
+
 <body>
 
-  <div class="card">
+  <div class="container">
     <h1>Tap to Reveal</h1>
 
-    <button onclick="reveal()">Tap Here</button>
+    <button class="tap-btn" id="tapBtn">TAP</button>
 
-    <div id="content" class="hidden">
-
-      <!-- SECRET MESSAGE -->
+    <div class="reveal" id="revealBox">
       <div class="message">
-        From being my friend…  
+        From being my friend…<br>
         you slowly became my favorite person 💛
       </div>
 
-      <!-- OPTIONAL VIDEO -->
-      <!-- Replace VIDEO_LINK_HERE -->
+      <!-- Optional video -->
+      <!-- Replace VIDEO_LINK -->
       <video controls>
         <source src="VIDEO_LINK_HERE" type="video/mp4">
-        Your browser does not support the video.
       </video>
-
     </div>
   </div>
 
   <script>
-    function reveal() {
-      document.querySelector("button").style.display = "none";
-      document.getElementById("content").classList.remove("hidden");
-    }
+    document.getElementById("tapBtn").addEventListener("click", function () {
+      this.style.display = "none";
+      const box = document.getElementById("revealBox");
+      box.style.display = "block";
+      setTimeout(() => box.classList.add("show"), 50);
+    });
   </script>
 
 </body>
