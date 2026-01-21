@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Tap to Reveal – Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tap to Reveal – Admin Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     body {
@@ -20,118 +20,88 @@
       padding: 24px;
       width: 100%;
       max-width: 380px;
-      border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-    h2 { text-align: center; }
-    input, textarea, select, button {
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input {
       width: 100%;
-      padding: 10px;
-      margin-top: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
       font-size: 14px;
     }
     button {
-      background: #d94f4f;
-      color: white;
+      width: 100%;
+      padding: 12px;
+      background: #e04b4b;
+      color: #fff;
       border: none;
+      font-size: 16px;
       cursor: pointer;
+      border-radius: 4px;
     }
-    .hidden { display: none; }
-    .link-box {
-      margin-top: 15px;
-      padding: 10px;
-      background: #eee;
-      word-break: break-all;
-      font-size: 13px;
+    button:hover {
+      background: #c83c3c;
     }
   </style>
 </head>
-
 <body>
 
-<div class="box">
-
-  <!-- LOGIN -->
-  <div id="loginBox">
+  <div class="box">
     <h2>Admin Login</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
+
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+
+    <button type="button" onclick="login()">Login</button>
   </div>
 
-  <!-- ADMIN PANEL -->
-  <div id="adminBox" class="hidden">
-    <h2>Create Gift</h2>
+  <!-- Firebase SDKs (COMPAT MODE – IMPORTANT) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-    <select id="lang">
-      <option value="en">English</option>
-      <option value="ta">Tamil</option>
-    </select>
+  <script>
+    // 🔥 YOUR FIREBASE CONFIG (ALREADY CORRECT)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAIt1C63DGhonXf1OURIhz82LroH2k3A",
+      authDomain: "tap-to-reveal.firebaseapp.com",
+      projectId: "tap-to-reveal",
+      storageBucket: "tap-to-reveal.firebasestorage.app",
+      messagingSenderId: "878205314791",
+      appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
+    };
 
-    <textarea id="message" placeholder="Gift message"></textarea>
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
 
-    <button onclick="createGift()">Generate Link</button>
+    const auth = firebase.auth();
 
-    <div id="result" class="link-box hidden"></div>
-  </div>
+    // ✅ LOGIN FUNCTION (THIS WAS MISSING EARLIER)
+    function login() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-</div>
+      if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+      }
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-<script>
-  // 🔴 REPLACE WITH YOUR FIREBASE CONFIG
-  const firebaseConfig = {
-  apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
-  authDomain: "tap-to-reveal.firebaseapp.com",
-  projectId: "tap-to-reveal",
-  storageBucket: "tap-to-reveal.firebasestorage.app",
-  messagingSenderId: "878205314791",
-  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
-};
-
-  firebase.initializeApp(firebaseConfig);
-
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  function login() {
-    const email = email.value;
-    const password = password.value;
-    auth.signInWithEmailAndPassword(email, password)
-      .then(() => {
-        loginBox.classList.add("hidden");
-        adminBox.classList.remove("hidden");
-      })
-      .catch(err => alert(err.message));
-  }
-
-  function generateId() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
-
-  function createGift() {
-    const giftId = generateId();
-    const lang = document.getElementById("lang").value;
-    const msg = document.getElementById("message").value;
-
-    db.collection("gifts").doc(giftId).set({
-      lang: lang,
-      message: msg,
-      createdAt: new Date()
-    }).then(() => {
-      const link =
-        `https://YOUR_REVEAL_SITE_URL/?id=${giftId}`;
-
-      const box = document.getElementById("result");
-      box.innerText = link;
-      box.classList.remove("hidden");
-    });
-  }
-</script>
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          alert("Login successful");
+          // redirect after login
+          window.location.href = "dashboard.html"; 
+        })
+        .catch(error => {
+          alert(error.message);
+          console.error(error);
+        });
+    }
+  </script>
 
 </body>
 </html>
