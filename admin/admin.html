@@ -9,99 +9,76 @@
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin: 0;
     }
     .box {
       background: #fff;
       padding: 24px;
       width: 100%;
-      max-width: 380px;
+      max-width: 360px;
       border-radius: 8px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    h2 { text-align: center; }
     input {
       width: 100%;
-      padding: 12px;
-      margin-bottom: 12px;
-      font-size: 14px;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
     }
     button {
       width: 100%;
       padding: 12px;
-      background: #e04b4b;
-      color: #fff;
+      background: #d9534f;
       border: none;
+      color: white;
       font-size: 16px;
       cursor: pointer;
-      border-radius: 4px;
-    }
-    button:hover {
-      background: #c83c3c;
     }
   </style>
 </head>
-<body>
 
+<body>
   <div class="box">
     <h2>Admin Login</h2>
 
-    <input id="email" type="email" placeholder="Email" />
-    <input id="password" type="password" placeholder="Password" />
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
 
     <button type="button" onclick="login()">Login</button>
   </div>
 
-  <!-- Firebase SDKs (COMPAT MODE – IMPORTANT) -->
+  <!-- Firebase SDK (COMPAT version for GitHub Pages) -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <script>
-    // 🔥 YOUR FIREBASE CONFIG (ALREADY CORRECT)
     const firebaseConfig = {
-  apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
-  authDomain: "tap-to-reveal.firebaseapp.com",
-  projectId: "tap-to-reveal",
-  storageBucket: "tap-to-reveal.firebasestorage.app",
-  messagingSenderId: "878205314791",
-  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
-};
+      apiKey: "AIzaSyDAlt1C36DGhonXf10UR1hz82Lroh2k3A",
+      authDomain: "tap-to-reveal.firebaseapp.com",
+      projectId: "tap-to-reveal"
+    };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-
     const auth = firebase.auth();
 
-    // ✅ LOGIN FUNCTION (THIS WAS MISSING EARLIER)
     function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-
-      if (!email || !password) {
-        alert("Please enter email and password");
-        return;
-      }
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
 
       auth.signInWithEmailAndPassword(email, password)
         .then(() => {
-          alert("Login successful");
-          // redirect after login
-          window.location.href = "dashboard.html"; 
+          // ✅ redirect (NO alert)
+          window.location.replace("dashboard.html");
         })
-        .catch(error => {
-          alert(error.message);
-          console.error(error);
+        .catch(err => {
+          alert(err.message);
         });
     }
   </script>
-
 </body>
 </html>
