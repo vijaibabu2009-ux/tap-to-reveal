@@ -1,6 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f3f4f6;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.card{
+  background:#fff;
+  padding:25px;
+  width:95%;
+  max-width:400px;
+  border-radius:12px;
+  box-shadow:0 15px 30px rgba(0,0,0,.15);
+}
+
+h2{text-align:center;margin-bottom:20px;}
+
+textarea, select, button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  font-size:15px;
+}
+
+textarea{
+  min-height:80px;
+  resize:vertical;
+}
+
+button{
+  background:#1f2937;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+button:hover{opacity:.9;}
+
+#result{
+  margin-top:15px;
+  padding:10px;
+  background:#eef2ff;
+  word-break:break-all;
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h2>Create Tap-to-Reveal Link</h2>
+
+  <select id="language">
+    <option value="en">English</option>
+    <option value="ta">Tamil</option>
+  </select>
+
+  <select id="mode">
+    <option value="one">One Time</option>
+    <option value="always">Always Active</option>
+  </select>
+
+  <textarea id="message" placeholder="Paste text / YouTube / MP3 / MP4 / Drive link"></textarea>
+
+  <button id="generateBtn">Generate Link</button>
+
+  <div id="result"></div>
+</div>
+
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
@@ -15,22 +96,36 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 document.getElementById("generateBtn").onclick = async () => {
-  const text = document.getElementById("message").value.trim();
 
-  if (!text) {
+  const message = document.getElementById("message").value.trim();
+  const mode = document.getElementById("mode").value;
+  const lang = document.getElementById("language").value;
+
+  if(!message){
     alert("Please enter message or link");
     return;
   }
 
-  const docRef = await addDoc(collection(db, "links"), {
-    message: text,          // 🔴 THIS is the key
-    createdAt: Date.now(),
-    revealed: false
-  });
+  try{
+    const docRef = await addDoc(collection(db,"links"),{
+      message: message,     // 🔑 EXACT user input
+      mode: mode,
+      language: lang,
+      revealed: false,
+      createdAt: Date.now()
+    });
 
-  document.getElementById("result").innerHTML =
-    `Link:<br>
-     <a href="https://vijaibabu2009-ux.github.io/tap-to-reveal/index.html?id=${docRef.id}" target="_blank">
-     Open Surprise 💖</a>`;
+    const link =
+      `https://vijaibabu2009-ux.github.io/tap-to-reveal/index.html?id=${docRef.id}`;
+
+    document.getElementById("result").innerHTML =
+      `<b>Link generated:</b><br>
+       <a href="${link}" target="_blank">${link}</a>`;
+
+  }catch(e){
+    alert("Error: " + e.message);
+  }
 };
 </script>
+</body>
+</html>
