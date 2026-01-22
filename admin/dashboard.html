@@ -97,7 +97,8 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .catch(console.error);
 // 🔐 HARD AUTH GUARD (NO FLICKER)
 auth.onAuthStateChanged(user => {
   if (!user) {
