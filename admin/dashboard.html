@@ -1,41 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Dashboard</title>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-  <style>
-    body { font-family: Arial; background:#f5f7fa; }
-    .box { width:400px; margin:80px auto; background:#fff; padding:20px; border-radius:8px; }
-    button { width:100%; padding:10px; background:#24364a; color:#fff; border:none; }
-  </style>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+}
+#loading {
+  text-align: center;
+  margin-top: 150px;
+  font-size: 18px;
+}
+header {
+  background: #243447;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+.container {
+  display: none;
+  padding: 40px;
+}
+.card {
+  width: 360px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+select, textarea, button {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+}
+button {
+  background: #243447;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.result {
+  margin-top: 10px;
+  background: #e8f0fe;
+  padding: 10px;
+  word-break: break-all;
+}
+.logout {
+  background:#e74c3c;
+  margin-top: 15px;
+}
+</style>
 </head>
-
 <body>
 
-<div class="box">
-  <h2>Create Tap-to-Reveal Link</h2>
+<div id="loading">Checking authentication...</div>
+
+<div class="container" id="app">
+<header>
+  Admin Dashboard
+</header>
+
+<div class="card">
+  <h3>Create Tap-to-Reveal Link</h3>
 
   <select id="lang">
     <option value="en">English</option>
     <option value="ta">Tamil</option>
-  </select><br><br>
+  </select>
 
   <select id="mode">
     <option value="one">One Time Reveal</option>
     <option value="always">Always Active</option>
-  </select><br><br>
+  </select>
 
-  <textarea id="message" placeholder="Secret message"></textarea><br><br>
+  <textarea id="message" placeholder="Secret message"></textarea>
 
-  <button onclick="createLink()">Generate Link</button>
+  <button onclick="generateLink()">Generate Link</button>
 
-  <p id="result"></p>
+  <div class="result" id="result" style="display:none;"></div>
+
+  <button class="logout" onclick="logout()">Logout</button>
 </div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -43,44 +99,52 @@ const firebaseConfig = {
   authDomain: "tap-to-reveal.firebaseapp.com",
   projectId: "tap-to-reveal"
 };
-
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// 🔐 BLOCK PAGE IF NOT LOGGED IN
+/* 🔐 AUTH GUARD — NO FLICKER */
 auth.onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "admin.html";
+  if (user) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("app").style.display = "block";
+  } else {
+    window.location.replace("admin.html");
   }
 });
 
-async function createLink() {
-  const user = auth.currentUser;
+/* 🔗 LINK GENERATION */
+function generateLink() {
+  const msg = document.getElementById("message").value.trim();
+  const lang = document.getElementById("lang").value;
+  const mode = document.getElementById("mode").value;
 
-  if (!user) {
-    alert("Not logged in");
+  if (!msg) {
+    alert("Message required");
     return;
   }
 
-  const data = {
-    message: message.value,
-    lang: lang.value,
-    mode: mode.value,
-    used: false,
-    createdBy: user.uid,
+  db.collection("secrets").add({
+    message: msg,
+    lang: lang,
+    mode: mode,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
+  }).then(doc => {
+    const link = `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${doc.id}`;
+    const res = document.getElementById("result");
+    res.style.display = "block";
+    res.innerHTML = `<b>Link:</b><br><a href="${link}" target="_blank">${link}</a>`;
+  }).catch(err => {
+    alert(err.message);
+  });
+}
 
-  try {
-    const ref = await db.collection("reveals").add(data);
-    result.innerHTML =
-      `<b>Link:</b><br>
-       https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${ref.id}`;
-  } catch (e) {
-    alert(e.message);
-  }
+/* 🚪 LOGOUT */
+function logout() {
+  auth.signOut().then(() => {
+    window.location.replace("admin.html");
+  });
 }
 </script>
 
