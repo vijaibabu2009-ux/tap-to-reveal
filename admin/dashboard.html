@@ -89,11 +89,14 @@
 };
 
 
-  firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // 🔒 Session guard
+  // Session guard
   if (!sessionStorage.getItem("admin")) {
     location.href = "admin.html";
   }
@@ -104,29 +107,37 @@
   }
 
   async function generateLink() {
-    const lang = lang.value;
-    const mode = mode.value;
-    const msg  = message.value.trim();
+    const lang = document.getElementById("lang").value;
+    const mode = document.getElementById("mode").value;
+    const msg  = document.getElementById("message").value.trim();
 
     if (!msg) {
       alert("Message required");
       return;
     }
 
-    const doc = await db.collection("secrets").add({
-      message: msg,
-      language: lang,
-      mode: mode,
-      used: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    try {
+      const ref = await db.collection("secrets").add({
+        message: msg,
+        language: lang,
+        mode: mode,
+        used: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
 
-    const link =
-      `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${doc.id}`;
+      const link =
+        `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${ref.id}`;
 
-    const box = document.getElementById("result");
-    box.style.display = "block";
-    box.innerHTML = `<b>Generated Link:</b><br><a href="${link}" target="_blank">${link}</a>`;
+      const box = document.getElementById("result");
+      box.style.display = "block";
+      box.innerHTML =
+        `<b>Generated Link:</b><br>
+         <a href="${link}" target="_blank">${link}</a>`;
+
+    } catch (e) {
+      alert("ERROR: " + e.message);
+      console.error(e);
+    }
   }
 </script>
 
