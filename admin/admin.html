@@ -51,6 +51,8 @@ const firebaseConfig = {
   messagingSenderId: "878205314791",
   appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
 };
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .catch(console.error);
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
