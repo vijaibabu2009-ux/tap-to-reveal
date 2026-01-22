@@ -1,118 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Tap to Reveal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>A Little Surprise 💖</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .card {
-      background: #fff;
-      padding: 30px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      width: 300px;
-    }
-    button {
-      background: #1f2937;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    #message {
-      margin-top: 15px;
-      font-size: 16px;
-      color: #111;
-    }
-    .error {
-      color: red;
-    }
-  </style>
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.romantic-card {
+  background: rgba(255,255,255,0.96);
+  width: 90%;
+  max-width: 360px;
+  padding: 30px;
+  border-radius: 22px;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+}
+
+.romantic-title {
+  margin-top: 0;
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.romantic-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #ff5f6d, #ffc371);
+  color: #fff;
+  cursor: pointer;
+}
+
+.romantic-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.romantic-message {
+  margin-top: 20px;
+  font-size: 18px;
+  color: #444;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.video-btn {
+  margin-top: 18px;
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border-radius: 30px;
+  border: none;
+  background: #c0392b;
+  color: #fff;
+  cursor: pointer;
+  display: none;
+}
+
+.hint {
+  margin-top: 18px;
+  font-size: 12px;
+  color: #999;
+}
+.error {
+  color: #c0392b;
+  margin-top: 15px;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="card">
-    <h2>Tap to Reveal</h2>
-    <button id="revealBtn">Tap to Reveal</button>
-    <div id="message"></div>
-  </div>
+<div class="romantic-card">
+  <h2 class="romantic-title">A Little Surprise 💖</h2>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <button id="revealBtn" class="romantic-btn">
+    Tap to reveal 💌
+  </button>
 
-  <script>
-    // 🔹 YOUR FIREBASE CONFIG
-    const firebaseConfig = {
-      apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
+  <p id="message" class="romantic-message"></p>
+
+  <button id="videoBtn" class="video-btn">
+    ▶ Tap to play short video
+  </button>
+
+  <p class="hint">Made with love ✨</p>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+/* 🔐 Firebase config (KEEP YOUR REAL VALUES) */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
   authDomain: "tap-to-reveal.firebaseapp.com",
-  projectId: "tap-to-reveal",
-  storageBucket: "tap-to-reveal.firebasestorage.app",
-  messagingSenderId: "878205314791",
-  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
+  projectId: "tap-to-reveal"
+};
 
-    };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+/* 🔑 Get ID from URL */
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
 
-    const params = new URLSearchParams(window.location.search);
-    const docId = params.get("id");
+const revealBtn = document.getElementById("revealBtn");
+const msgBox = document.getElementById("message");
+const videoBtn = document.getElementById("videoBtn");
 
-    const btn = document.getElementById("revealBtn");
-    const msg = document.getElementById("message");
+if (!id) {
+  msgBox.innerHTML = "<span class='error'>Invalid link</span>";
+  revealBtn.style.display = "none";
+}
 
-    if (!docId) {
-      msg.innerHTML = "<span class='error'>Invalid link</span>";
-      btn.style.display = "none";
+/* 💝 Reveal Logic */
+revealBtn.onclick = async () => {
+  revealBtn.disabled = true;
+
+  try {
+    const ref = db.collection("links").doc(id);
+    const snap = await ref.get();
+
+    if (!snap.exists) {
+      msgBox.innerHTML = "<span class='error'>This surprise is no longer available</span>";
+      return;
     }
 
-    btn.addEventListener("click", async () => {
-      btn.disabled = true;
+    const data = snap.data();
 
-      try {
-        const ref = db.collection("links").doc(docId);
-        const snap = await ref.get();
+    // Show message
+    msgBox.innerText = data.message;
 
-        if (!snap.exists) {
-          msg.innerHTML = "<span class='error'>This link is already used or invalid</span>";
-          return;
-        }
+    // Show video button if video link exists
+    if (data.videoUrl) {
+      videoBtn.style.display = "block";
+      videoBtn.onclick = () => {
+        window.open(data.videoUrl, "_blank");
+      };
+    }
 
-        const data = snap.data();
+    // One-time logic (SAFE: mark used, no delete)
+    if (data.mode === "one-time" && data.used !== true) {
+      await ref.update({ used: true });
+    }
 
-        // ✅ SHOW MESSAGE FIRST (NO RELOAD / NO SECOND FETCH)
-        msg.innerText = data.message;
-
-        // ✅ DELETE ONLY IF ONE-TIME
-        if (data.mode === "one-time") {
-          await ref.delete();
-        }
-
-      } catch (e) {
-        console.error(e);
-        msg.innerHTML = "<span class='error'>Something went wrong</span>";
-      }
-    });
-  </script>
+  } catch (e) {
+    console.error(e);
+    msgBox.innerHTML = "<span class='error'>Something went wrong</span>";
+  }
+};
+</script>
 
 </body>
 </html>
