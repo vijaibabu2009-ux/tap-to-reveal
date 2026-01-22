@@ -1,112 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
+v<!DOCTYPE html>
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Tap to Reveal</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f3f4f6;
-}
-.card {
-  width: 360px;
-  margin: 120px auto;
-  background: white;
-  padding: 25px;
-  text-align: center;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-}
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-}
-.error {
-  color: red;
-  margin-top: 10px;
-}
-.message {
-  margin-top: 15px;
-  font-size: 18px;
-  font-weight: bold;
-}
-</style>
+  <title>Tap to Reveal</title>
+  <style>
+    body { font-family: Arial; background:#f2f2f2; }
+    .box { width:400px; margin:120px auto; padding:20px; background:#fff; border-radius:6px; text-align:center; }
+    button { padding:10px 20px; background:#2c3e50; color:#fff; border:none; cursor:pointer; }
+  </style>
 </head>
-
 <body>
 
-<div class="card">
+<div class="box">
   <h2>Tap to Reveal</h2>
-  <button id="revealBtn">Tap to Reveal</button>
-  <div class="message" id="message"></div>
-  <div class="error" id="error"></div>
+  <button onclick="reveal()">Tap to Reveal</button>
+  <p id="msg"></p>
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
-/* 🔥 Firebase Config */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+   apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
   authDomain: "tap-to-reveal.firebaseapp.com",
-  projectId: "tap-to-reveal"
+  projectId: "tap-to-reveal",
+  storageBucket: "tap-to-reveal.firebasestorage.app",
+  messagingSenderId: "878205314791",
+  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-/* 🔑 Get ID from URL */
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+const id = new URLSearchParams(location.search).get("id");
 
-const revealBtn = document.getElementById("revealBtn");
-const messageBox = document.getElementById("message");
-const errorBox = document.getElementById("error");
-
-if (!id) {
-  errorBox.innerText = "Invalid link";
-  revealBtn.disabled = true;
-}
-
-/* 🚀 Reveal Logic */
-revealBtn.addEventListener("click", async () => {
-  errorBox.innerText = "";
-  messageBox.innerText = "";
-
+async function reveal() {
   try {
     const ref = db.collection("links").doc(id);
     const snap = await ref.get();
 
-    if (!snap.exists) {
-      errorBox.innerText = "Link not found";
-      return;
+    if (!snap.exists) return msg.innerText = "Invalid link";
+
+    msg.innerText = snap.data().message;
+
+    if (snap.data().mode === "one") {
+      await ref.delete();
     }
-
-    const data = snap.data();
-
-    if (data.type === "one-time" && data.used === true) {
-      errorBox.innerText = "This link was already used";
-      return;
-    }
-
-    messageBox.innerText = data.message;
-
-    if (data.type === "one-time") {
-      await ref.update({ used: true });
-    }
-
-    revealBtn.disabled = true;
-
-  } catch (err) {
-    console.error(err);
-    errorBox.innerText = "Something went wrong";
+  } catch {
+    msg.innerText = "Something went wrong";
   }
-});
+}
 </script>
 
 </body>
