@@ -1,69 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
 <title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: #f4f6f8;
-}
-#loading {
-  text-align: center;
-  margin-top: 150px;
-  font-size: 18px;
+  margin: 0;
 }
 header {
-  background: #243447;
+  background: #1f2937;
   color: white;
-  padding: 15px;
+  padding: 12px;
   text-align: center;
 }
-.container {
-  display: none;
-  padding: 40px;
-}
 .card {
-  width: 360px;
-  margin: auto;
   background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-select, textarea, button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
+  padding: 25px;
+  max-width: 420px;
+  margin: 40px auto;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.1);
 }
 button {
-  background: #243447;
+  width: 100%;
+  padding: 12px;
+  background: #1f2937;
   color: white;
   border: none;
+  border-radius: 6px;
   cursor: pointer;
 }
-.result {
-  margin-top: 10px;
-  background: #e8f0fe;
+select, textarea {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 10px;
+}
+.link-box {
+  margin-top: 15px;
+  background: #eef;
   padding: 10px;
   word-break: break-all;
 }
 .logout {
-  background:#e74c3c;
-  margin-top: 15px;
+  background: #c0392b;
+  margin-top: 10px;
 }
 </style>
 </head>
+
 <body>
 
-<div id="loading">Checking authentication...</div>
-
-<div class="container" id="app">
-<header>
-  Admin Dashboard
-</header>
+<header>Admin Dashboard</header>
 
 <div class="card">
   <h3>Create Tap-to-Reveal Link</h3>
@@ -74,18 +65,17 @@ button {
   </select>
 
   <select id="mode">
-    <option value="one">One Time Reveal</option>
+    <option value="one-time">One Time Reveal</option>
     <option value="always">Always Active</option>
   </select>
 
   <textarea id="message" placeholder="Secret message"></textarea>
 
-  <button onclick="generateLink()">Generate Link</button>
+  <button onclick="generate()">Generate Link</button>
 
-  <div class="result" id="result" style="display:none;"></div>
+  <div id="result" class="link-box" style="display:none;"></div>
 
   <button class="logout" onclick="logout()">Logout</button>
-</div>
 </div>
 
 <!-- Firebase -->
@@ -95,59 +85,52 @@ button {
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
+  apiKey: "AIzaSyDAlt16C36DGhonXf10URlhz8ZLroH2k3A",
   authDomain: "tap-to-reveal.firebaseapp.com",
   projectId: "tap-to-reveal",
-  storageBucket: "tap-to-reveal.firebasestorage.app",
+  storageBucket: "tap-to-reveal.appspot.com",
   messagingSenderId: "878205314791",
   appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
 };
+
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* 🔐 AUTH GUARD — NO FLICKER */
+// 🔐 HARD AUTH GUARD (NO FLICKER)
 auth.onAuthStateChanged(user => {
-  if (user) {
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("app").style.display = "block";
-  } else {
-    window.location.replace("admin.html");
+  if (!user) {
+    window.location.href = "admin.html";
   }
 });
 
-/* 🔗 LINK GENERATION */
-function generateLink() {
-  const msg = document.getElementById("message").value.trim();
-  const lang = document.getElementById("lang").value;
-  const mode = document.getElementById("mode").value;
-
-  if (!msg) {
-    alert("Message required");
-    return;
-  }
-
-  db.collection("secrets").add({
-    message: msg,
-    lang: lang,
-    mode: mode,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(doc => {
-    const link = `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${doc.id}`;
-    const res = document.getElementById("result");
-    res.style.display = "block";
-    res.innerHTML = `<b>Link:</b><br><a href="${link}" target="_blank">${link}</a>`;
-  }).catch(err => {
-    alert(err.message);
-  });
+function randomId() {
+  return Math.random().toString(36).substring(2, 10);
 }
 
-/* 🚪 LOGOUT */
-function logout() {
-  auth.signOut().then(() => {
-    window.location.replace("admin.html");
+async function generate() {
+  const msg = document.getElementById("message").value.trim();
+  if (!msg) return alert("Message required");
+
+  const id = randomId();
+
+  await db.collection("links").doc(id).set({
+    message: msg,
+    lang: document.getElementById("lang").value,
+    mode: document.getElementById("mode").value,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
+
+  const url = `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${id}`;
+
+  const box = document.getElementById("result");
+  box.style.display = "block";
+  box.innerHTML = `<b>Link:</b><br><a href="${url}" target="_blank">${url}</a>`;
+}
+
+function logout() {
+  auth.signOut();
 }
 </script>
 
