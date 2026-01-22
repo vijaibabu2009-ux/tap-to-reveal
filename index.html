@@ -1,56 +1,118 @@
-v<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Tap to Reveal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
-    body { font-family: Arial; background:#f2f2f2; }
-    .box { width:400px; margin:120px auto; padding:20px; background:#fff; border-radius:6px; text-align:center; }
-    button { padding:10px 20px; background:#2c3e50; color:#fff; border:none; cursor:pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    button {
+      background: #1f2937;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    #message {
+      margin-top: 15px;
+      font-size: 16px;
+      color: #111;
+    }
+    .error {
+      color: red;
+    }
   </style>
 </head>
+
 <body>
 
-<div class="box">
-  <h2>Tap to Reveal</h2>
-  <button onclick="reveal()">Tap to Reveal</button>
-  <p id="msg"></p>
-</div>
+  <div class="card">
+    <h2>Tap to Reveal</h2>
+    <button id="revealBtn">Tap to Reveal</button>
+    <div id="message"></div>
+  </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-<script>
-const firebaseConfig = {
-   apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
+  <script>
+    // 🔹 YOUR FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
   authDomain: "tap-to-reveal.firebaseapp.com",
   projectId: "tap-to-reveal",
   storageBucket: "tap-to-reveal.firebasestorage.app",
   messagingSenderId: "878205314791",
   appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
-};
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+    };
 
-const id = new URLSearchParams(location.search).get("id");
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-async function reveal() {
-  try {
-    const ref = db.collection("links").doc(id);
-    const snap = await ref.get();
+    const params = new URLSearchParams(window.location.search);
+    const docId = params.get("id");
 
-    if (!snap.exists) return msg.innerText = "Invalid link";
+    const btn = document.getElementById("revealBtn");
+    const msg = document.getElementById("message");
 
-    msg.innerText = snap.data().message;
-
-    if (snap.data().mode === "one") {
-      await ref.delete();
+    if (!docId) {
+      msg.innerHTML = "<span class='error'>Invalid link</span>";
+      btn.style.display = "none";
     }
-  } catch {
-    msg.innerText = "Something went wrong";
-  }
-}
-</script>
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+
+      try {
+        const ref = db.collection("links").doc(docId);
+        const snap = await ref.get();
+
+        if (!snap.exists) {
+          msg.innerHTML = "<span class='error'>This link is already used or invalid</span>";
+          return;
+        }
+
+        const data = snap.data();
+
+        // ✅ SHOW MESSAGE FIRST (NO RELOAD / NO SECOND FETCH)
+        msg.innerText = data.message;
+
+        // ✅ DELETE ONLY IF ONE-TIME
+        if (data.mode === "one-time") {
+          await ref.delete();
+        }
+
+      } catch (e) {
+        console.error(e);
+        msg.innerHTML = "<span class='error'>Something went wrong</span>";
+      }
+    });
+  </script>
 
 </body>
 </html>
