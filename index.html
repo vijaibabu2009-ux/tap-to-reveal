@@ -1,122 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Tap to Reveal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8" />
+<title>Tap to Reveal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .box {
-      background: #fff;
-      padding: 24px;
-      max-width: 420px;
-      width: 90%;
-      text-align: center;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.1);
-    }
-    h2 { margin-bottom: 12px; }
-    .msg {
-      font-size: 18px;
-      white-space: pre-wrap;
-      margin-top: 16px;
-    }
-    .error {
-      color: #c0392b;
-      font-weight: bold;
-    }
-    .hint {
-      color: #777;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-  </style>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+.card {
+  background: #fff;
+  padding: 30px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.1);
+}
+button {
+  padding: 12px 20px;
+  background: #1f2937;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.error {
+  color: red;
+  font-weight: bold;
+}
+</style>
 </head>
+
 <body>
 
-<div class="box">
-  <h2 id="title">Tap to Reveal</h2>
-  <div id="content" class="msg">Loading...</div>
+<div class="card" id="card">
+  <h2>Tap to Reveal</h2>
+  <button id="revealBtn">Tap to Reveal</button>
+  <p id="message"></p>
 </div>
 
-<!-- Firebase SDKs -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
-  // 🔥 FIREBASE CONFIG (same project as admin)
-  const firebaseConfig = {
-    apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
-    authDomain: "tap-to-reveal.firebaseapp.com",
-    projectId: "tap-to-reveal",
-    storageBucket: "tap-to-reveal.appspot.com",
-    messagingSenderId: "878205314791",
-    appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyDAlt16C36DGhonXf10URlhz8ZLroH2k3A",
+  authDomain: "tap-to-reveal.firebaseapp.com",
+  projectId: "tap-to-reveal",
+  storageBucket: "tap-to-reveal.appspot.com",
+  messagingSenderId: "878205314791",
+  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  const content = document.getElementById("content");
-  const title = document.getElementById("title");
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
 
-  // 🔗 Read ?id= from URL
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
+const btn = document.getElementById("revealBtn");
+const msg = document.getElementById("message");
 
-  if (!id) {
-    content.innerHTML = `<div class="error">Invalid link</div>`;
-    throw new Error("Missing ID");
+if (!id) {
+  msg.textContent = "Invalid link";
+  msg.className = "error";
+  btn.style.display = "none";
+}
+
+btn.onclick = async () => {
+  try {
+    const ref = db.collection("links").doc(id);
+    const snap = await ref.get();
+
+    if (!snap.exists) {
+      msg.textContent = "This link is invalid or expired";
+      msg.className = "error";
+      btn.style.display = "none";
+      return;
+    }
+
+    const data = snap.data();
+    msg.textContent = data.message;
+    btn.style.display = "none";
+
+    // ONE TIME REVEAL
+    if (data.mode === "one-time") {
+      await ref.delete();
+    }
+
+  } catch (e) {
+    msg.textContent = "Something went wrong";
+    msg.className = "error";
+    console.error(e);
   }
-
-  db.collection("reveals").doc(id).get().then(doc => {
-    if (!doc.exists) {
-      content.innerHTML = `<div class="error">This link does not exist</div>`;
-      return;
-    }
-
-    const data = doc.data();
-
-    // Language handling
-    if (data.lang === "ta") {
-      title.innerText = "ரகசிய செய்தி";
-    }
-
-    // 🔒 ONE TIME MODE
-    if (data.mode === "one" && data.used === true) {
-      content.innerHTML = `
-        <div class="error">
-          ${data.lang === "ta" 
-            ? "இந்த செய்தி ஏற்கனவே திறக்கப்பட்டது"
-            : "This message has already been opened"}
-        </div>`;
-      return;
-    }
-
-    // ✅ Show message
-    content.innerText = data.message;
-
-    // 🔐 Mark as used (only once)
-    if (data.mode === "one") {
-      db.collection("reveals").doc(id).update({
-        used: true,
-        usedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }
-
-  }).catch(err => {
-    console.error(err);
-    content.innerHTML = `<div class="error">Something went wrong</div>`;
-  });
+};
 </script>
 
 </body>
