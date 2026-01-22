@@ -1,19 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Admin Dashboard</title>
-  <meta charset="utf-8" />
-  <style>
-    body { font-family: Arial; background:#f4f6f7; }
-    .box { width:450px; margin:60px auto; background:#fff; padding:20px; border-radius:8px }
-    textarea,select,button { width:100%; padding:10px; margin-top:10px }
-    button { background:#2c3e50; color:#fff; border:none }
-  </style>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background:#f4f6f8;
+    margin:0;
+  }
+  header {
+    background:#2c3e50;
+    color:#fff;
+    padding:12px;
+    text-align:center;
+  }
+  .container {
+    max-width:420px;
+    margin:40px auto;
+    background:#fff;
+    padding:25px;
+    border-radius:8px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+  }
+  select, textarea, button, input {
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+  }
+  button {
+    background:#2c3e50;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+  }
+  .result {
+    margin-top:15px;
+    word-break:break-all;
+    background:#eef;
+    padding:10px;
+    display:none;
+  }
+</style>
 </head>
+
 <body>
 
-<div class="box">
-  <h2>Create Tap-to-Reveal Link</h2>
+<header>
+  Admin Dashboard
+  <button onclick="logout()" style="float:right;background:#e74c3c">Logout</button>
+</header>
+
+<div class="container">
+  <h3>Create Tap-to-Reveal Link</h3>
 
   <select id="lang">
     <option value="en">English</option>
@@ -21,25 +61,25 @@
   </select>
 
   <select id="mode">
-    <option value="one-time">One Time Reveal</option>
+    <option value="one">One Time Reveal</option>
     <option value="always">Always Active</option>
   </select>
 
   <textarea id="message" placeholder="Secret message..."></textarea>
 
-  <button onclick="createLink()">Generate Link</button>
+  <button onclick="generateLink()">Generate Link</button>
 
-  <p id="result"></p>
+  <div id="result" class="result"></div>
 </div>
-
-<button onclick="logout()" style="position:fixed;top:10px;right:10px">Logout</button>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-const firebaseConfig = {
+  // 🔴 USE SAME CONFIG AS admin.html
+ const firebaseConfig = {
   apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
   authDomain: "tap-to-reveal.firebaseapp.com",
   projectId: "tap-to-reveal",
@@ -48,33 +88,46 @@ const firebaseConfig = {
   appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
 
-if (!sessionStorage.getItem("admin")) {
-  location.href = "admin.html";
-}
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-function createLink() {
-  const id = Math.random().toString(36).substr(2,8);
+  // 🔒 Session guard
+  if (!sessionStorage.getItem("admin")) {
+    location.href = "admin.html";
+  }
 
-  db.collection("reveals").doc(id).set({
-    message: message.value,
-    lang: lang.value,
-    mode: mode.value,
-    revealed: false,
-    createdAt: new Date()
-  }).then(() => {
-    result.innerText =
-      location.origin +
-      "/tap-to-reveal/index.html?id=" + id;
-  });
-}
+  function logout() {
+    sessionStorage.clear();
+    auth.signOut().then(() => location.href = "admin.html");
+  }
 
-function logout() {
-  sessionStorage.clear();
-  location.href = "admin.html";
-}
+  async function generateLink() {
+    const lang = lang.value;
+    const mode = mode.value;
+    const msg  = message.value.trim();
+
+    if (!msg) {
+      alert("Message required");
+      return;
+    }
+
+    const doc = await db.collection("secrets").add({
+      message: msg,
+      language: lang,
+      mode: mode,
+      used: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    const link =
+      `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${doc.id}`;
+
+    const box = document.getElementById("result");
+    box.style.display = "block";
+    box.innerHTML = `<b>Generated Link:</b><br><a href="${link}" target="_blank">${link}</a>`;
+  }
 </script>
 
 </body>
