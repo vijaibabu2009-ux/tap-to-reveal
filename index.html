@@ -6,209 +6,124 @@
 <title>A Little Surprise 💖</title>
 
 <style>
-* {
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+body{
+  margin:0;
+  height:100vh;
+  background:linear-gradient(180deg,#ff9a9e,#fad0c4);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:sans-serif;
+  overflow:hidden;
 }
 
-body {
-  margin: 0;
-  height: 100vh;
-  background: linear-gradient(180deg, #ff9a9e, #fad0c4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+.card{
+  background:white;
+  padding:28px;
+  border-radius:20px;
+  width:90%;
+  max-width:360px;
+  text-align:center;
+  box-shadow:0 20px 40px rgba(0,0,0,.2);
 }
 
-/* Floating hearts & flowers */
-.floating {
-  position: absolute;
-  font-size: 20px;
-  animation: float 12s linear infinite;
-  opacity: 0.8;
+h1{ color:#e63946; }
+
+.heart{
+  width:90px;
+  height:90px;
+  background:#ff4d6d;
+  transform:rotate(-45deg);
+  margin:20px auto;
+  position:relative;
+  cursor:pointer;
+  animation:pulse 1.3s infinite;
+}
+.heart::before,
+.heart::after{
+  content:"";
+  width:90px;
+  height:90px;
+  background:#ff4d6d;
+  border-radius:50%;
+  position:absolute;
+}
+.heart::before{ top:-45px; left:0; }
+.heart::after{ left:45px; top:0; }
+
+@keyframes pulse{
+  0%{transform:scale(1) rotate(-45deg);}
+  50%{transform:scale(1.1) rotate(-45deg);}
+  100%{transform:scale(1) rotate(-45deg);}
 }
 
-@keyframes float {
-  from { transform: translateY(100vh) rotate(0deg); }
-  to { transform: translateY(-120vh) rotate(360deg); }
-}
-
-.card {
-  background: #fff;
-  width: 90%;
-  max-width: 380px;
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-  text-align: center;
-}
-
-h1 {
-  color: #e63946;
-  margin-bottom: 10px;
-}
-
-/* Heart button */
-.heart-btn {
-  width: 140px;
-  height: 120px;
-  background: #ff4d6d;
-  position: relative;
-  margin: 30px auto;
-  transform: rotate(-45deg);
-  cursor: pointer;
-  animation: pulse 1.5s infinite;
-}
-
-.heart-btn::before,
-.heart-btn::after {
-  content: "";
-  width: 140px;
-  height: 120px;
-  background: #ff4d6d;
-  border-radius: 50%;
-  position: absolute;
-}
-
-.heart-btn::before {
-  top: -70px;
-  left: 0;
-}
-
-.heart-btn::after {
-  left: 70px;
-  top: 0;
-}
-
-.heart-text {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  transform: rotate(45deg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-@keyframes pulse {
-  0% { transform: rotate(-45deg) scale(1); }
-  50% { transform: rotate(-45deg) scale(1.1); }
-  100% { transform: rotate(-45deg) scale(1); }
-}
-
-.hidden {
-  display: none;
-}
-
-.message {
-  margin-top: 15px;
-  font-size: 16px;
-  color: #333;
-}
-
-video, audio {
-  width: 100%;
-  margin-top: 15px;
-  border-radius: 12px;
-}
-
-.footer {
-  margin-top: 15px;
-  font-size: 12px;
-  color: #888;
-}
+.hidden{display:none;}
+video,audio{width:100%;border-radius:12px;margin-top:15px;}
 </style>
 </head>
 
 <body>
-
-<!-- Floating elements -->
-<script>
-const icons = ["❤️","🌸","💖","💐"];
-for (let i = 0; i < 20; i++) {
-  const el = document.createElement("div");
-  el.className = "floating";
-  el.innerText = icons[Math.floor(Math.random()*icons.length)];
-  el.style.left = Math.random()*100 + "vw";
-  el.style.animationDuration = (8 + Math.random()*10) + "s";
-  el.style.fontSize = (14 + Math.random()*16) + "px";
-  document.body.appendChild(el);
-}
-</script>
-
 <div class="card">
   <h1>A Little Surprise 💝</h1>
-  <p>Tap the heart 💓</p>
+  <p id="hint">Tap the heart ❤️</p>
 
-  <div class="heart-btn" id="tapBtn">
-    <div class="heart-text">Tap 💌</div>
-  </div>
+  <div class="heart" id="revealBtn"></div>
 
   <div id="content" class="hidden"></div>
-
-  <div class="footer">Made with love ✨</div>
+  <small>Made with love ✨</small>
 </div>
 
-<script>
-/* 🔹 GET CONTENT FROM URL */
-const params = new URLSearchParams(window.location.search);
-const revealData = params.get("data"); 
-// data can be: text OR video link OR mp3 link
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const tapBtn = document.getElementById("tapBtn");
+const firebaseConfig = {
+ apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
+  authDomain: "tap-to-reveal.firebaseapp.com",
+  projectId: "tap-to-reveal",
+  storageBucket: "tap-to-reveal.firebasestorage.app",
+  messagingSenderId: "878205314791",
+  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const id = new URLSearchParams(window.location.search).get("id");
 const content = document.getElementById("content");
+const btn = document.getElementById("revealBtn");
 
-tapBtn.addEventListener("click", () => {
-  tapBtn.style.display = "none";
+btn.onclick = async () => {
+  const snap = await getDoc(doc(db,"links",id));
+  if(!snap.exists()) return;
+
+  const msg = snap.data().message;
+
+  document.getElementById("hint").remove();
+  btn.remove();
   content.classList.remove("hidden");
 
-  if (!revealData) {
-    content.innerHTML = "<p class='message'>💖 You are special 💖</p>";
-    return;
+  // 🔹 MEDIA AUTO-DETECTION
+  if(msg.match(/\.(mp3|wav)$/)){
+    content.innerHTML = `<audio controls autoplay src="${msg}"></audio>`;
+  }
+  else if(msg.includes("youtube.com") || msg.includes("youtu.be")){
+    const vid = msg.split("v=")[1]?.split("&")[0] || msg.split("/").pop();
+    content.innerHTML =
+      `<video controls autoplay>
+        <source src="https://www.youtube.com/embed/${vid}">
+      </video>
+      <p><a href="${msg}" target="_blank">Open video ❤️</a></p>`;
+  }
+  else if(msg.match(/\.(mp4|webm)$/)){
+    content.innerHTML = `<video controls autoplay src="${msg}"></video>`;
+  }
+  else{
+    content.innerHTML = `<p style="font-size:18px">${msg} 💖</p>`;
   }
 
-  // VIDEO (YouTube / MP4)
-  if (revealData.includes("youtube.com") || revealData.includes("youtu.be")) {
-    const videoId = extractYouTubeID(revealData);
-    content.innerHTML = `
-      <p class="message">Close your eyes & listen 🎶</p>
-      <iframe width="100%" height="215"
-        src="https://www.youtube.com/embed/${videoId}?autoplay=1"
-        frameborder="0"
-        allow="autoplay; encrypted-media"
-        allowfullscreen></iframe>
-    `;
-  }
-
-  // AUDIO (mp3)
-  else if (revealData.endsWith(".mp3")) {
-    content.innerHTML = `
-      <p class="message">Just for you 🎧</p>
-      <audio controls autoplay>
-        <source src="${revealData}" type="audio/mpeg">
-      </audio>
-    `;
-  }
-
-  // TEXT
-  else {
-    content.innerHTML = `
-      <p class="message">${decodeURIComponent(revealData)}</p>
-    `;
-  }
-});
-
-/* Extract YouTube ID safely */
-function extractYouTubeID(url) {
-  const regExp = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
-  const match = url.match(regExp);
-  return match ? match[1] : "";
-}
+  await updateDoc(doc(db,"links",id),{ revealed:true });
+};
 </script>
-
 </body>
 </html>
