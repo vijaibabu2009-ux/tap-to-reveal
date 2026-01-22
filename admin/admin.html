@@ -1,62 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Admin Login</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f2f2f2;
-}
-.box {
-  width: 320px;
-  margin: 120px auto;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-input, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-}
-button {
-  background: #1f2937;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-}
-button:active {
-  opacity: 0.8;
-}
-</style>
+  <title>Admin Login</title>
+  <style>
+    body { font-family: Arial; background:#f2f2f2; }
+    .box { width:300px; margin:120px auto; padding:20px; background:#fff; border-radius:6px; }
+    input, button { width:100%; padding:10px; margin-top:10px; }
+    button { background:#c0392b; color:#fff; border:none; cursor:pointer; }
+  </style>
 </head>
-
 <body>
 
 <div class="box">
-  <h2>Admin Login</h2>
-
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Password">
-
-  <!-- IMPORTANT: type="button" -->
-  <button type="button" id="loginBtn">Login</button>
-
-  <p id="status"></p>
+  <h3>Admin Login</h3>
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="login()">Login</button>
 </div>
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
 <script>
-/* =========================
-   FIREBASE CONFIG
-   ========================= */
 const firebaseConfig = {
   apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
   authDomain: "tap-to-reveal.firebaseapp.com",
@@ -69,32 +34,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-/* =========================
-   LOGIN BUTTON HANDLER
-   ========================= */
-document.getElementById("loginBtn").addEventListener("click", () => {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const status = document.getElementById("status");
-
-  if (!email || !password) {
-    status.innerText = "Enter email & password";
-    return;
-  }
-
-  status.innerText = "Logging in…";
-
-  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-    .then(() => auth.signInWithEmailAndPassword(email, password))
-    .then(() => {
-      status.innerText = "Login successful";
-      window.location.replace("dashboard.html");
-    })
-    .catch(err => {
-      status.innerText = err.message;
-      console.error(err);
-    });
-});
+function login() {
+  auth.signInWithEmailAndPassword(
+    email.value,
+    password.value
+  ).then(() => {
+    window.location.href = "dashboard.html";
+  }).catch(err => alert(err.message));
+}
 </script>
 
 </body>
