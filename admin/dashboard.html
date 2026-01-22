@@ -1,94 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Admin Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
-  font-family: Arial;
-  background: #f4f6f8;
   margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+}
+#loading {
+  text-align: center;
+  margin-top: 150px;
+  font-size: 18px;
 }
 header {
   background: #1f2937;
-  color: white;
-  padding: 12px;
+  color: #fff;
+  padding: 14px;
   text-align: center;
 }
+.container {
+  display: none;
+  padding: 30px;
+}
 .card {
-  background: white;
-  padding: 25px;
+  background: #fff;
   max-width: 420px;
-  margin: 40px auto;
+  margin: auto;
+  padding: 25px;
   border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+}
+select, textarea, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
 }
 button {
-  width: 100%;
-  padding: 12px;
   background: #1f2937;
   color: white;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
 }
-select, textarea {
-  width: 100%;
-  margin-bottom: 12px;
-  padding: 10px;
-}
-.link-box {
-  margin-top: 15px;
-  background: #eef;
+.result {
+  margin-top: 12px;
+  background: #e8f0fe;
   padding: 10px;
   word-break: break-all;
 }
 .logout {
   background: #c0392b;
-  margin-top: 10px;
+  margin-top: 15px;
 }
 </style>
 </head>
 
 <body>
 
-<header>Admin Dashboard</header>
+<div id="loading">Checking authentication…</div>
 
-<div class="card">
-  <h3>Create Tap-to-Reveal Link</h3>
+<div class="container" id="app">
+  <header>Admin Dashboard</header>
 
-  <select id="lang">
-    <option value="en">English</option>
-    <option value="ta">Tamil</option>
-  </select>
+  <div class="card">
+    <h3>Create Tap-to-Reveal Link</h3>
 
-  <select id="mode">
-    <option value="one-time">One Time Reveal</option>
-    <option value="always">Always Active</option>
-  </select>
+    <select id="lang">
+      <option value="en">English</option>
+      <option value="ta">Tamil</option>
+    </select>
 
-  <textarea id="message" placeholder="Secret message"></textarea>
+    <select id="mode">
+      <option value="one-time">One Time Reveal</option>
+      <option value="always">Always Active</option>
+    </select>
 
-  <button onclick="generate()">Generate Link</button>
+    <textarea id="message" placeholder="Secret message"></textarea>
 
-  <div id="result" class="link-box" style="display:none;"></div>
+    <button id="genBtn">Generate Link</button>
 
-  <button class="logout" onclick="logout()">Logout</button>
+    <div id="result" class="result" style="display:none;"></div>
+
+    <button class="logout" id="logoutBtn">Logout</button>
+  </div>
 </div>
 
-<!-- Firebase -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
+/* =========================
+   FIREBASE CONFIG
+   ========================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyDAlt16C36DGhonXf10URlhz8ZLroH2k3A",
+  apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
   authDomain: "tap-to-reveal.firebaseapp.com",
   projectId: "tap-to-reveal",
-  storageBucket: "tap-to-reveal.appspot.com",
+  storageBucket: "tap-to-reveal.firebasestorage.app",
   messagingSenderId: "878205314791",
   appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
 };
@@ -97,42 +110,76 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-  .catch(console.error);
-// 🔐 HARD AUTH GUARD (NO FLICKER)
+
+/* =========================
+   AUTH GUARD (NO FLICKER)
+   ========================= */
+let authChecked = false;
+
 auth.onAuthStateChanged(user => {
+  if (authChecked) return;
+  authChecked = true;
+
   if (!user) {
-    window.location.href = "admin.html";
+    window.location.replace("admin.html");
+  } else {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("app").style.display = "block";
   }
 });
 
-function randomId() {
-  return Math.random().toString(36).substring(2, 10);
-}
+/* =========================
+   GENERATE LINK (SAFE WRITE)
+   ========================= */
+document.getElementById("genBtn").onclick = async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Not logged in");
+    return;
+  }
 
-async function generate() {
   const msg = document.getElementById("message").value.trim();
-  if (!msg) return alert("Message required");
+  if (!msg) {
+    alert("Message required");
+    return;
+  }
 
-  const id = randomId();
+  const lang = document.getElementById("lang").value;
+  const mode = document.getElementById("mode").value;
 
-  await db.collection("links").doc(id).set({
-    message: msg,
-    lang: document.getElementById("lang").value,
-    mode: document.getElementById("mode").value,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  try {
+    const ref = await db.collection("reveals").add({
+      message: msg,
+      lang: lang,
+      mode: mode,
+      used: false,
+      createdBy: user.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    const link =
+      `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${ref.id}`;
+
+    const box = document.getElementById("result");
+    box.style.display = "block";
+    box.innerHTML =
+      `<b>Generated Link:</b><br>
+       <a href="${link}" target="_blank">${link}</a>`;
+
+  } catch (err) {
+    alert(err.message);
+    console.error(err);
+  }
+};
+
+/* =========================
+   LOGOUT
+   ========================= */
+document.getElementById("logoutBtn").onclick = () => {
+  auth.signOut().then(() => {
+    window.location.replace("admin.html");
   });
-
-  const url = `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${id}`;
-
-  const box = document.getElementById("result");
-  box.style.display = "block";
-  box.innerHTML = `<b>Link:</b><br><a href="${url}" target="_blank">${url}</a>`;
-}
-
-function logout() {
-  auth.signOut();
-}
+};
 </script>
 
 </body>
