@@ -1,39 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Tap to Reveal</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
   font-family: Arial, sans-serif;
-  background: #f4f6f8;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
+  background: #f3f4f6;
 }
 .card {
-  background: #fff;
-  padding: 30px;
-  width: 90%;
-  max-width: 420px;
+  width: 360px;
+  margin: 120px auto;
+  background: white;
+  padding: 25px;
   text-align: center;
   border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
 button {
-  padding: 12px 20px;
-  background: #1f2937;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 16px;
   cursor: pointer;
 }
 .error {
   color: red;
+  margin-top: 10px;
+}
+.message {
+  margin-top: 15px;
+  font-size: 18px;
   font-weight: bold;
 }
 </style>
@@ -41,10 +38,11 @@ button {
 
 <body>
 
-<div class="card" id="card">
+<div class="card">
   <h2>Tap to Reveal</h2>
   <button id="revealBtn">Tap to Reveal</button>
-  <p id="message"></p>
+  <div class="message" id="message"></div>
+  <div class="error" id="error"></div>
 </div>
 
 <!-- Firebase -->
@@ -52,57 +50,63 @@ button {
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
+/* 🔥 Firebase Config */
 const firebaseConfig = {
-  apiKey: "AIzaSyDAlt16C36DGhonXf10URlhz8ZLroH2k3A",
+  apiKey: "YOUR_API_KEY",
   authDomain: "tap-to-reveal.firebaseapp.com",
-  projectId: "tap-to-reveal",
-  storageBucket: "tap-to-reveal.appspot.com",
-  messagingSenderId: "878205314791",
-  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
+  projectId: "tap-to-reveal"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+/* 🔑 Get ID from URL */
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-const btn = document.getElementById("revealBtn");
-const msg = document.getElementById("message");
+const revealBtn = document.getElementById("revealBtn");
+const messageBox = document.getElementById("message");
+const errorBox = document.getElementById("error");
 
 if (!id) {
-  msg.textContent = "Invalid link";
-  msg.className = "error";
-  btn.style.display = "none";
+  errorBox.innerText = "Invalid link";
+  revealBtn.disabled = true;
 }
 
-btn.onclick = async () => {
+/* 🚀 Reveal Logic */
+revealBtn.addEventListener("click", async () => {
+  errorBox.innerText = "";
+  messageBox.innerText = "";
+
   try {
     const ref = db.collection("links").doc(id);
     const snap = await ref.get();
 
     if (!snap.exists) {
-      msg.textContent = "This link is invalid or expired";
-      msg.className = "error";
-      btn.style.display = "none";
+      errorBox.innerText = "Link not found";
       return;
     }
 
     const data = snap.data();
-    msg.textContent = data.message;
-    btn.style.display = "none";
 
-    // ONE TIME REVEAL
-    if (data.mode === "one-time") {
-      await ref.delete();
+    if (data.type === "one-time" && data.used === true) {
+      errorBox.innerText = "This link was already used";
+      return;
     }
 
-  } catch (e) {
-    msg.textContent = "Something went wrong";
-    msg.className = "error";
-    console.error(e);
+    messageBox.innerText = data.message;
+
+    if (data.type === "one-time") {
+      await ref.update({ used: true });
+    }
+
+    revealBtn.disabled = true;
+
+  } catch (err) {
+    console.error(err);
+    errorBox.innerText = "Something went wrong";
   }
-};
+});
 </script>
 
 </body>
