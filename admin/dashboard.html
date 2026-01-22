@@ -1,58 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Admin Dashboard</title>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
 
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background:#f4f6f8;
-    margin:0;
-  }
-  header {
-    background:#2c3e50;
-    color:#fff;
-    padding:12px;
-    text-align:center;
-  }
-  .container {
-    max-width:420px;
-    margin:40px auto;
-    background:#fff;
-    padding:25px;
-    border-radius:8px;
-    box-shadow:0 10px 30px rgba(0,0,0,.15);
-  }
-  select, textarea, button, input {
-    width:100%;
-    margin-top:10px;
-    padding:10px;
-  }
-  button {
-    background:#2c3e50;
-    color:#fff;
-    border:none;
-    cursor:pointer;
-  }
-  .result {
-    margin-top:15px;
-    word-break:break-all;
-    background:#eef;
-    padding:10px;
-    display:none;
-  }
-</style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #243447;
+      color: white;
+      padding: 12px;
+      text-align: center;
+    }
+    .box {
+      background: white;
+      width: 360px;
+      margin: 60px auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,.15);
+    }
+    select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    button {
+      background: #243447;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 15px;
+      background: #e9f5ff;
+      padding: 10px;
+      display: none;
+      word-break: break-all;
+    }
+  </style>
 </head>
 
 <body>
 
 <header>
   Admin Dashboard
-  <button onclick="logout()" style="float:right;background:#e74c3c">Logout</button>
+  <button onclick="logout()" style="float:right;margin-right:10px;">Logout</button>
 </header>
 
-<div class="container">
+<div class="box">
   <h3>Create Tap-to-Reveal Link</h3>
 
   <select id="lang">
@@ -65,20 +70,14 @@
     <option value="always">Always Active</option>
   </select>
 
-  <textarea id="message" placeholder="Secret message..."></textarea>
+  <textarea id="message" placeholder="Secret message"></textarea>
 
   <button onclick="generateLink()">Generate Link</button>
 
-  <div id="result" class="result"></div>
+  <div id="result"></div>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
-  // 🔴 USE SAME CONFIG AS admin.html
  const firebaseConfig = {
   apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
   authDomain: "tap-to-reveal.firebaseapp.com",
@@ -96,7 +95,6 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
 
-  // Session guard
   if (!sessionStorage.getItem("admin")) {
     location.href = "admin.html";
   }
@@ -107,6 +105,8 @@
   }
 
   async function generateLink() {
+    console.log("Generate clicked");
+
     const lang = document.getElementById("lang").value;
     const mode = document.getElementById("mode").value;
     const msg  = document.getElementById("message").value.trim();
@@ -117,7 +117,7 @@
     }
 
     try {
-      const ref = await db.collection("secrets").add({
+      const doc = await db.collection("secrets").add({
         message: msg,
         language: lang,
         mode: mode,
@@ -126,17 +126,17 @@
       });
 
       const link =
-        `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${ref.id}`;
+        `https://vijaibabu2009-ux.github.io/tap-to-reveal/?id=${doc.id}`;
 
-      const box = document.getElementById("result");
-      box.style.display = "block";
-      box.innerHTML =
-        `<b>Generated Link:</b><br>
-         <a href="${link}" target="_blank">${link}</a>`;
+      const r = document.getElementById("result");
+      r.style.display = "block";
+      r.innerHTML = `<b>Link:</b><br><a href="${link}" target="_blank">${link}</a>`;
 
-    } catch (e) {
-      alert("ERROR: " + e.message);
-      console.error(e);
+      console.log("Link generated", doc.id);
+
+    } catch (err) {
+      alert(err.message);
+      console.error(err);
     }
   }
 </script>
