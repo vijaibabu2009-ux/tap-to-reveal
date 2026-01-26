@@ -19,9 +19,7 @@
       overflow: hidden;
     }
 
-    #box {
-      z-index: 2;
-    }
+    #box { z-index: 2; padding: 20px; }
 
     /* ❤️ Heart */
     .heart {
@@ -43,8 +41,7 @@
     }
 
     @keyframes burst {
-      0% { transform: scale(1); opacity: 1; }
-      100% { transform: scale(2); opacity: 0; }
+      to { transform: scale(2); opacity: 0; }
     }
 
     #hint {
@@ -69,14 +66,22 @@
       }
     }
 
-    /* 💌 Message reveal */
+    /* 💌 Reveal */
     .reveal {
-      animation: fadeIn 1.8s ease forwards;
+      animation: fadeIn 1.6s ease forwards;
     }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(12px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    video {
+      width: 90vw;
+      max-width: 420px;
+      border-radius: 14px;
+      box-shadow: 0 0 40px rgba(255,0,80,0.35);
+      margin-top: 16px;
     }
   </style>
 </head>
@@ -87,14 +92,11 @@
     <div id="hint">Tap to Reveal</div>
   </div>
 
-  <audio id="audio"></audio>
-
-  <!-- 🔥 Firebase SDK (CDN – REQUIRED for GitHub Pages) -->
+  <!-- 🔥 Firebase SDK (CDN – GitHub Pages safe) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 🔑 Firebase config (YOUR PROJECT)
     const firebaseConfig = {
       apiKey: "AIzaSyDLR2viVk-4QuAe0DUzcrvqIWYbWYP7WGI",
       authDomain: "surprise-f507b.firebaseapp.com",
@@ -107,23 +109,22 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    const box = document.getElementById("box");
     const heart = document.getElementById("heart");
     const hint = document.getElementById("hint");
-    const box = document.getElementById("box");
-    const audio = document.getElementById("audio");
 
     const id = new URLSearchParams(window.location.search).get("id");
 
-    function spawnFalling() {
-      const icons = ["❤️", "💖", "🌸", "🌹"];
-      for (let i = 0; i < 20; i++) {
+    function fallingEffect() {
+      const icons = ["❤️","💖","🌸","🌹"];
+      for (let i = 0; i < 22; i++) {
         const el = document.createElement("div");
         el.className = "fall";
-        el.innerText = icons[Math.floor(Math.random() * icons.length)];
-        el.style.left = Math.random() * 100 + "vw";
-        el.style.animationDuration = (3 + Math.random() * 2) + "s";
+        el.textContent = icons[Math.floor(Math.random()*icons.length)];
+        el.style.left = Math.random()*100 + "vw";
+        el.style.animationDuration = (3 + Math.random()*2) + "s";
         document.body.appendChild(el);
-        setTimeout(() => el.remove(), 5000);
+        setTimeout(()=>el.remove(),5000);
       }
     }
 
@@ -135,7 +136,7 @@
 
       heart.classList.add("burst");
       hint?.remove();
-      spawnFalling();
+      fallingEffect();
 
       const snap = await get(ref(db, "reveals/" + id));
       if (!snap.exists()) {
@@ -149,10 +150,13 @@
         return;
       }
 
-      box.innerHTML = `<h2 class="reveal">${data.message}</h2>`;
-
-      audio.src = data.media;
-      audio.play();
+      box.innerHTML = `
+        <h2 class="reveal">${data.message}</h2>
+        ${data.video ? `
+          <video class="reveal" controls autoplay playsinline>
+            <source src="${data.video}" type="video/mp4">
+          </video>` : ""}
+      `;
 
       await update(ref(db, "reveals/" + id), { used: true });
     };
