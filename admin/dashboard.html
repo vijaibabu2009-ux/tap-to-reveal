@@ -102,7 +102,8 @@
       created: Date.now()
     });
 
-    const link = `https://vijaiababu2009-ux.github.io/tap-to-reveal/index.html?id=${id}`;
+    const link = `${location.origin}/tap-to-reveal/?id=${id}`;
+
     out.innerHTML = `<a href="${link}" target="_blank">${link}</a>`;
   };
 </script>
