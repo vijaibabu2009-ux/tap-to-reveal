@@ -35,8 +35,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 22px;
   cursor: pointer;
+  user-select: none;
 }
 
 /* ---------- HEART ---------- */
@@ -101,7 +102,7 @@ body {
   letter-spacing: 1px;
 }
 
-/* ---------- REVEAL ---------- */
+/* ---------- REVEAL OVERLAY ---------- */
 .reveal {
   position: fixed;
   inset: 0;
@@ -120,20 +121,27 @@ body {
   pointer-events: auto;
 }
 
+/* ---------- REVEAL CONTENT ---------- */
 .reveal-content {
   text-align: center;
-  animation: fadeUp 0.6s ease forwards;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.reveal.show .reveal-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal h1 {
+  font-size: 26px;
+  margin-bottom: 10px;
+}
+
+.reveal p {
+  font-size: 15px;
+  opacity: 0.9;
 }
 </style>
 </head>
@@ -150,10 +158,10 @@ body {
   </div>
 </div>
 
-<div class="reveal">
+<div class="reveal" id="reveal">
   <div class="reveal-content">
     <h1>❤️ For You</h1>
-    <p>This was worth the tap.</p>
+    <p>This message is now guaranteed to appear.</p>
   </div>
 </div>
 
@@ -161,7 +169,7 @@ body {
 const tapArea = document.getElementById("tapArea");
 const heart = document.querySelector(".heart");
 const glow = document.querySelector(".glow");
-const reveal = document.querySelector(".reveal");
+const reveal = document.getElementById("reveal");
 
 let triggered = false;
 
