@@ -1,166 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Tap to Reveal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Tap to Reveal ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(circle at top, #3a001c, #000);
-      color: #fff;
-      font-family: system-ui, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      overflow: hidden;
-    }
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #ffdee9, #b3005e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
 
-    #box { z-index: 2; padding: 20px; }
+#tapBox {
+  background: white;
+  padding: 40px 50px;
+  border-radius: 18px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 30px 80px rgba(0,0,0,.3);
+  z-index: 10;
+}
 
-    /* ❤️ Heart */
-    .heart {
-      font-size: 76px;
-      cursor: pointer;
-      animation: pulse 1.6s infinite;
-      user-select: none;
-    }
+#tapBox h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #b3005e;
+}
 
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.25); }
-      100% { transform: scale(1); }
-    }
+#tapBox p {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #444;
+}
 
-    /* 💥 Burst */
-    .burst {
-      animation: burst 0.6s ease-out forwards;
-    }
+video {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+  background: black;
+}
 
-    @keyframes burst {
-      to { transform: scale(2); opacity: 0; }
-    }
+.heart {
+  position: fixed;
+  top: -10%;
+  font-size: 24px;
+  animation: fall 6s linear infinite;
+  opacity: 0.8;
+}
 
-    #hint {
-      margin-top: 8px;
-      opacity: 0.85;
-      font-size: 14px;
-    }
-
-    /* 🌸 Falling hearts & flowers */
-    .fall {
-      position: fixed;
-      top: -20px;
-      font-size: 24px;
-      pointer-events: none;
-      animation: fall linear forwards;
-    }
-
-    @keyframes fall {
-      to {
-        transform: translateY(110vh) rotate(360deg);
-        opacity: 0;
-      }
-    }
-
-    /* 💌 Reveal */
-    .reveal {
-      animation: fadeIn 1.6s ease forwards;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    video {
-      width: 90vw;
-      max-width: 420px;
-      border-radius: 14px;
-      box-shadow: 0 0 40px rgba(255,0,80,0.35);
-      margin-top: 16px;
-    }
-  </style>
+@keyframes fall {
+  to {
+    transform: translateY(120vh) rotate(360deg);
+  }
+}
+</style>
 </head>
+
 <body>
 
-  <div id="box">
-    <div class="heart" id="heart">❤️</div>
-    <div id="hint">Tap to Reveal</div>
-  </div>
+<div id="tapBox">
+  <h1>❤️ TAP TO REVEAL ❤️</h1>
+  <p>Your surprise is waiting…</p>
+</div>
 
-  <!-- 🔥 Firebase SDK (CDN – GitHub Pages safe) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<video id="revealVideo" playsinline>
+  <source src="https://firebasestorage.googleapis.com/v0/b/surprise-f507b.firebasestorage.app/o/Valentine_s_Day_Reveal_Video.mp4?alt=media&token=9594106b-5c3a-4313-9079-d346eaec141d" type="video/mp4">
+</video>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDLR2viVk-4QuAe0DUzcrvqIWYbWYP7WGI",
-      authDomain: "surprise-f507b.firebaseapp.com",
-      projectId: "surprise-f507b",
-      storageBucket: "surprise-f507b.firebasestorage.app",
-      messagingSenderId: "1027446628296",
-      appId: "1:1027446628296:web:88fa311bd4de230375eafd"
-    };
+<script>
+const tapBox = document.getElementById("tapBox");
+const video = document.getElementById("revealVideo");
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+tapBox.addEventListener("click", async () => {
+  tapBox.style.display = "none";
 
-    const box = document.getElementById("box");
-    const heart = document.getElementById("heart");
-    const hint = document.getElementById("hint");
+  // hearts + flowers
+  for (let i = 0; i < 30; i++) {
+    const el = document.createElement("div");
+    el.className = "heart";
+    el.textContent = Math.random() > 0.5 ? "❤️" : "🌸";
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.animationDuration = 4 + Math.random() * 4 + "s";
+    el.style.fontSize = 20 + Math.random() * 30 + "px";
+    document.body.appendChild(el);
+  }
 
-    const id = new URLSearchParams(window.location.search).get("id");
+  video.style.display = "block";
+  video.muted = false;
 
-    function fallingEffect() {
-      const icons = ["❤️","💖","🌸","🌹"];
-      for (let i = 0; i < 22; i++) {
-        const el = document.createElement("div");
-        el.className = "fall";
-        el.textContent = icons[Math.floor(Math.random()*icons.length)];
-        el.style.left = Math.random()*100 + "vw";
-        el.style.animationDuration = (3 + Math.random()*2) + "s";
-        document.body.appendChild(el);
-        setTimeout(()=>el.remove(),5000);
-      }
-    }
-
-    box.onclick = async () => {
-      if (!id) {
-        box.innerHTML = "Invalid link 💔";
-        return;
-      }
-
-      heart.classList.add("burst");
-      hint?.remove();
-      fallingEffect();
-
-      const snap = await get(ref(db, "reveals/" + id));
-      if (!snap.exists()) {
-        box.innerHTML = "Invalid or expired 💔";
-        return;
-      }
-
-      const data = snap.val();
-      if (data.used) {
-        box.innerHTML = "This surprise was already opened 💔";
-        return;
-      }
-
-      box.innerHTML = `
-        <h2 class="reveal">${data.message}</h2>
-        ${data.video ? `
-          <video class="reveal" controls autoplay playsinline>
-            <source src="${data.video}" type="video/mp4">
-          </video>` : ""}
-      `;
-
-      await update(ref(db, "reveals/" + id), { used: true });
-    };
-  </script>
+  try {
+    await video.play();
+  } catch (e) {
+    console.log("Autoplay blocked:", e);
+  }
+});
+</script>
 
 </body>
 </html>
