@@ -10,7 +10,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -20,78 +19,33 @@ body {
   align-items: center;
   justify-content: center;
   font-family: system-ui, sans-serif;
-  overflow: hidden;
   color: #fff;
 }
 
-.container {
-  text-align: center;
-}
-
 .tap-area {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 22px;
+  text-align: center;
   cursor: pointer;
 }
 
-.heart-wrapper {
-  position: relative;
-  width: 110px;
-  height: 110px;
-}
-
 .heart {
-  width: 100px;
-  height: 100px;
+  width: 90px;
+  height: 90px;
+  margin: auto;
   background: radial-gradient(circle at 30% 30%, #ff6b9f, #e6004c);
-  clip-path: path("M50 90 C-20 30 25 -10 50 22 C75 -10 120 30 50 90 Z");
-  transition: transform 0.12s ease-out;
+  clip-path: path("M45 80 C-20 30 20 -10 45 20 C70 -10 110 30 45 80 Z");
+  transition: transform 0.15s ease;
 }
 
-.heart.press { transform: scale(0.92); }
-
-.heart.beat {
-  animation: heartbeat 0.6s ease-in-out;
-}
-
-@keyframes heartbeat {
-  0% { transform: scale(1); }
-  20% { transform: scale(1.15); }
-  40% { transform: scale(1); }
-  60% { transform: scale(1.12); }
-  100% { transform: scale(1); }
-}
-
-.glow {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  opacity: 0;
-}
-
-.glow.active {
-  animation: glowPulse 0.6s ease-in-out forwards;
-}
-
-@keyframes glowPulse {
-  50% {
-    box-shadow:
-      0 0 30px rgba(255, 96, 140, 0.7),
-      0 0 60px rgba(255, 96, 140, 0.4);
-    opacity: 1;
-  }
+.heart.press {
+  transform: scale(0.9);
 }
 
 .tap-text {
-  margin-top: 14px;
+  margin-top: 12px;
   font-size: 14px;
   opacity: 0.85;
-  letter-spacing: 1px;
 }
 
-/* Reveal */
 .reveal {
   position: fixed;
   inset: 0;
@@ -102,7 +56,7 @@ body {
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.45s ease;
+  transition: opacity 0.4s ease;
 }
 
 .reveal.show {
@@ -112,92 +66,74 @@ body {
 
 .reveal-content {
   text-align: center;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.reveal.show .reveal-content {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.reveal h1 {
-  font-size: 26px;
-  margin-bottom: 10px;
-}
-
-.reveal p {
-  font-size: 16px;
-  opacity: 0.95;
   max-width: 300px;
-  margin: auto;
-  line-height: 1.4;
+  animation: fadeUp 0.6s ease forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <div class="tap-area" id="tapArea">
-    <div class="heart-wrapper">
-      <div class="glow"></div>
-      <div class="heart"></div>
-    </div>
-    <div class="tap-text">TAP TO REVEAL</div>
-  </div>
+<div class="tap-area" id="tapArea">
+  <div class="heart"></div>
+  <div class="tap-text">TAP TO REVEAL</div>
 </div>
 
 <div class="reveal" id="reveal">
   <div class="reveal-content">
-    <h1>❤️ For You</h1>
+    <h2>❤️ For You</h2>
     <p id="messageText">Loading...</p>
   </div>
 </div>
 
-<script>
-const tapArea = document.getElementById("tapArea");
-const heart = document.querySelector(".heart");
-const glow = document.querySelector(".glow");
-const reveal = document.getElementById("reveal");
-const messageText = document.getElementById("messageText");
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const params = new URLSearchParams(window.location.search);
+const firebaseConfig = {
+  apiKey: "AIzaSyDLR2viVk-4QuaEODUzcrvqIWYbWYP7WGI",
+  authDomain: "surprise-f507b.firebaseapp.com",
+  databaseURL: "https://surprise-f507b-default-rtdb.firebaseio.com",
+  projectId: "surprise-f507b",
+  storageBucket: "surprise-f507b.firebasestorage.app",
+  messagingSenderId: "1027446628296",
+  appId: "1:1027446628296:web:88fa311bd4de230375eafd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const params = new URLSearchParams(location.search);
 const id = params.get("id");
 
-let message = null;
+const messageText = document.getElementById("messageText");
+const tapArea = document.getElementById("tapArea");
+const heart = document.querySelector(".heart");
+const reveal = document.getElementById("reveal");
+
+let message = "No message found 💔";
 
 if (id) {
-  message = localStorage.getItem("tap_" + id);
+  const snap = await get(ref(db, "messages/" + id));
+  if (snap.exists()) {
+    message = snap.val().message;
+  }
 }
 
-messageText.textContent = message || "Someone made this just for you 💖";
-
-let triggered = false;
+messageText.textContent = message;
 
 tapArea.addEventListener("pointerdown", () => {
-  if (!triggered) heart.classList.add("press");
+  heart.classList.add("press");
 });
 
 tapArea.addEventListener("pointerup", () => {
-  if (triggered) return;
-  triggered = true;
-
   heart.classList.remove("press");
-
-  if (navigator.vibrate) {
-    navigator.vibrate([30, 60, 30]);
-  }
-
-  setTimeout(() => {
-    heart.classList.add("beat");
-    glow.classList.add("active");
-  }, 80);
-
-  setTimeout(() => {
-    reveal.classList.add("show");
-  }, 900);
+  setTimeout(() => reveal.classList.add("show"), 250);
 });
 </script>
 
