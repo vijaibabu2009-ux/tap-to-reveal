@@ -13,42 +13,20 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  font-family:system-ui;
-}
-
-#container{
-  position:relative;
-  width:100%;
-  height:100%;
 }
 
 video{
   width:100%;
   height:100%;
-  object-fit:cover;
-}
-
-/* ▶️ Play overlay */
-#playBtn{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:90px;
-  color:white;
-  background:rgba(0,0,0,.4);
-  cursor:pointer;
+  object-fit:contain;
+  background:black;
 }
 </style>
 </head>
 
 <body>
 
-<div id="container">
-  <video id="video" playsinline preload="auto"></video>
-  <div id="playBtn">▶️</div>
-</div>
+<video id="video" controls playsinline preload="metadata"></video>
 
 <script>
 const params = new URLSearchParams(window.location.search);
@@ -58,15 +36,7 @@ if(media){
   media = decodeURIComponent(media);
   const video = document.getElementById("video");
   video.src = media;
-  video.load();
 }
-
-// ▶️ Play (WORKS ON PC + MOBILE)
-document.getElementById("playBtn").onclick = () => {
-  const video = document.getElementById("video");
-  video.play();
-  document.getElementById("playBtn").style.display = "none";
-};
 </script>
 
 </body>
