@@ -44,8 +44,6 @@ body{
   50%{transform:translateY(-14px)}
   100%{transform:translateY(0)}
 }
-
-/* 💥 Gift Open */
 .open{
   animation:openBox .8s forwards;
 }
@@ -99,17 +97,15 @@ video{
 
 <body>
 
-<!-- 🎁 Gift -->
 <div id="gift">🎁</div>
 
-<!-- 🎬 Video Content -->
 <div id="content">
-  <video id="video" playsinline></video>
+  <video id="video" playsinline muted></video>
   <div id="msg"></div>
 </div>
 
 <script>
-/* 🌙 Sparkles background */
+// 🌙 Sparkles
 for(let i=0;i<40;i++){
   const s=document.createElement("div");
   s.className="sparkle";
@@ -119,13 +115,13 @@ for(let i=0;i<40;i++){
   document.body.appendChild(s);
 }
 
-/* URL params */
-const params=new URLSearchParams(window.location.search);
+// URL params
+const params=new URLSearchParams(location.search);
 const msg=params.get("msg");
 let media=params.get("media");
 if(media) media=decodeURIComponent(media);
 
-/* 🌸 Falling hearts */
+// 🌸 Falling hearts
 function falling(){
   const icons=["❤️","💖","🌸","🌹"];
   for(let i=0;i<30;i++){
@@ -140,22 +136,24 @@ function falling(){
   }
 }
 
-/* 🎁 Click gift */
+// 🎁 Tap gift
 document.getElementById("gift").onclick=()=>{
   const gift=document.getElementById("gift");
   gift.classList.add("open");
-
-  falling(); // start hearts
+  falling();
 
   setTimeout(()=>{
     gift.style.display="none";
     document.getElementById("content").style.display="block";
 
     const v=document.getElementById("video");
+
     if(media){
       v.src=media;
-      v.muted=false;      // 🔑 IMPORTANT
-      v.play().catch(()=>{}); // autoplay after user gesture
+      v.muted=true;                // 🔑 START MUTED
+      v.play().then(()=>{
+        setTimeout(()=>v.muted=false,300); // 🔑 UNMUTE AFTER PLAY
+      }).catch(()=>{});
     }
 
     if(msg){
