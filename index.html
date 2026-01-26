@@ -51,14 +51,13 @@ body{
   to{transform:scale(2);opacity:0}
 }
 
-/* 🌸 Falling */
+/* 🌸 Falling hearts */
 .fall{
   position:fixed;
   top:-10%;
   font-size:24px;
   pointer-events:none;
   animation:fall linear forwards;
-  z-index:3;
 }
 @keyframes fall{
   to{
@@ -67,19 +66,32 @@ body{
   }
 }
 
-/* 🎬 Video container */
+/* 🎬 Video stage */
 #stage{
   display:none;
   position:absolute;
   inset:0;
   background:black;
-  z-index:2;
 }
 
 video{
   width:100%;
   height:100%;
   object-fit:cover;
+}
+
+/* ▶️ Play overlay */
+#playBtn{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:80px;
+  color:white;
+  background:rgba(0,0,0,.35);
+  cursor:pointer;
+  z-index:10;
 }
 
 /* 💌 Message */
@@ -92,7 +104,7 @@ video{
   color:white;
   text-shadow:0 2px 8px rgba(0,0,0,.7);
   padding:0 10px;
-  z-index:6;
+  z-index:20;
 }
 </style>
 </head>
@@ -101,11 +113,15 @@ video{
 
 <div id="gift">🎁</div>
 
-<div id="stage"></div>
+<div id="stage">
+  <video id="video" playsinline></video>
+  <div id="playBtn">▶️</div>
+</div>
+
 <div id="msg"></div>
 
 <script>
-/* 🌙 Sparkles (lightweight) */
+// 🌙 Sparkles
 for(let i=0;i<35;i++){
   const s=document.createElement("div");
   s.className="sparkle";
@@ -115,13 +131,13 @@ for(let i=0;i<35;i++){
   document.body.appendChild(s);
 }
 
-/* Params */
+// Params
 const p=new URLSearchParams(location.search);
 const msg=p.get("msg");
 let media=p.get("media");
 if(media) media=decodeURIComponent(media);
 
-/* 🌸 Falling hearts */
+// 🌸 Falling hearts
 function falling(){
   const icons=["❤️","💖","🌸","🌹"];
   for(let i=0;i<28;i++){
@@ -136,7 +152,7 @@ function falling(){
   }
 }
 
-/* 🎁 Tap handler */
+// 🎁 Gift click
 document.getElementById("gift").onclick=()=>{
   const gift=document.getElementById("gift");
   gift.classList.add("open");
@@ -145,31 +161,27 @@ document.getElementById("gift").onclick=()=>{
   setTimeout(()=>{
     gift.remove();
 
-    // 🔑 CREATE VIDEO AFTER ANIMATION
     const stage=document.getElementById("stage");
     stage.style.display="block";
 
+    const video=document.getElementById("video");
     if(media){
-      const v=document.createElement("video");
-      v.src=media;
-      v.playsInline=true;
-      v.muted=true;     // start muted
-      v.controls=false;
-      stage.appendChild(v);
-
-      // 🔑 WAIT FOR LAYOUT
-      requestAnimationFrame(()=>{
-        v.play().then(()=>{
-          setTimeout(()=>v.muted=false,300);
-        }).catch(()=>{});
-      });
+      video.src=media;
+      video.muted=false;
     }
 
     if(msg){
       document.getElementById("msg").innerText=decodeURIComponent(msg);
     }
 
-  },650); // wait for gift animation
+  },650);
+};
+
+// ▶️ Play button (GUARANTEED)
+document.getElementById("playBtn").onclick=()=>{
+  const video=document.getElementById("video");
+  video.play();
+  document.getElementById("playBtn").style.display="none";
 };
 </script>
 
