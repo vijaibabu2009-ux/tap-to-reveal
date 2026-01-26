@@ -1,115 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin – Tap to Reveal</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<title>Admin – Tap to Reveal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f3f4f6;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
+<style>
+body{
+  margin:0;
+  height:100vh;
+  background:#f4f4f4;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:system-ui;
+}
 
-    .card {
-      background: #ffffff;
-      padding: 24px;
-      width: 360px;
-      border-radius: 14px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      text-align: center;
-    }
+.card{
+  background:white;
+  padding:28px;
+  width:340px;
+  border-radius:16px;
+  box-shadow:0 20px 50px rgba(0,0,0,.2);
+}
 
-    h2 {
-      margin-bottom: 12px;
-    }
+textarea,input{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
 
-    textarea,
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
+button{
+  margin-top:15px;
+  width:100%;
+  padding:12px;
+  background:black;
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:15px;
+  cursor:pointer;
+}
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 15px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    button:hover {
-      background: #222;
-    }
-
-    .output {
-      margin-top: 14px;
-      word-break: break-all;
-      font-size: 13px;
-    }
-
-    .output a {
-      color: #2563eb;
-      text-decoration: none;
-    }
-  </style>
+#result{
+  margin-top:15px;
+  word-break:break-all;
+  font-size:13px;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="card">
-    <h2>Create Tap-to-Reveal</h2>
+<div class="card">
+  <h3>Create Tap-to-Reveal</h3>
 
-    <textarea id="message" rows="3" placeholder="Type your message (optional)"></textarea>
+  <textarea id="message" rows="3" placeholder="Message (optional)"></textarea>
 
-    <input
-      id="mediaUrl"
-      type="text"
-      placeholder="Paste Firebase MP4 URL here"
-    />
+  <input
+    id="mediaUrl"
+    type="text"
+    placeholder="Paste Firebase MP4 URL here"
+  >
 
-    <button onclick="generateLink()">Generate Link</button>
+  <button onclick="generateLink()">Generate Link</button>
 
-    <div class="output" id="result"></div>
-  </div>
+  <div id="result"></div>
+</div>
 
-  <script>
-    function generateLink() {
-      const message = document.getElementById("message").value.trim();
-      const mediaUrl = document.getElementById("mediaUrl").value.trim();
+<script>
+function generateLink(){
+  const msg = document.getElementById("message").value.trim();
+  const media = document.getElementById("mediaUrl").value.trim();
 
-      if (!mediaUrl) {
-        alert("Please paste the Firebase video URL");
-        return;
-      }
+  if(!msg && !media){
+    alert("Enter message or video URL");
+    return;
+  }
 
-      const base =
-        "https://vijaiababu2009-ux.github.io/tap-to-reveal/index.html";
+  // ✅ ABSOLUTE URL — NO MORE 404
+  const base =
+    "https://vijaiababu2009-ux.github.io/tap-to-reveal/index.html";
 
-      const finalUrl =
-        base +
-        "?media=" +
-        encodeURIComponent(mediaUrl) +
-        "&msg=" +
-        encodeURIComponent(message);
+  const params = new URLSearchParams();
+  if(msg) params.set("msg", msg);
+  if(media) params.set("media", media);
 
-      document.getElementById("result").innerHTML =
-        `<b>Generated Link:</b><br><a href="${finalUrl}" target="_blank">${finalUrl}</a>`;
-    }
-  </script>
+  const finalUrl = `${base}?${params.toString()}`;
+
+  document.getElementById("result").innerHTML = `
+    <b>Generated Link:</b><br>
+    <a href="${finalUrl}" target="_blank">${finalUrl}</a>
+  `;
+}
+</script>
 
 </body>
 </html>
