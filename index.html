@@ -114,14 +114,15 @@ video{
 <div id="gift">🎁</div>
 
 <div id="stage">
-  <video id="video" preload="auto"></video>
+  <video id="video" preload="auto" playsinline></video>
   <div id="playBtn">▶️</div>
 </div>
 
 <div id="msg"></div>
 
 <script>
-/* 🌙 Sparkles */
+// 🌙 Sparkles (tracked)
+const sparkles=[];
 for(let i=0;i<35;i++){
   const s=document.createElement("div");
   s.className="sparkle";
@@ -129,15 +130,17 @@ for(let i=0;i<35;i++){
   s.style.top=Math.random()*100+"vh";
   s.style.animationDelay=Math.random()*3+"s";
   document.body.appendChild(s);
+  sparkles.push(s);
 }
 
-/* Params */
+// Params
 const p=new URLSearchParams(location.search);
 const msg=p.get("msg");
 let media=p.get("media");
 if(media) media=decodeURIComponent(media);
 
-/* 🌸 Falling hearts */
+// 🌸 Falling hearts (tracked)
+const falls=[];
 function falling(){
   const icons=["❤️","💖","🌸","🌹"];
   for(let i=0;i<28;i++){
@@ -148,11 +151,11 @@ function falling(){
     el.style.fontSize=20+Math.random()*28+"px";
     el.style.animationDuration=(4+Math.random()*3)+"s";
     document.body.appendChild(el);
-    setTimeout(()=>el.remove(),7000);
+    falls.push(el);
   }
 }
 
-/* 🎁 Gift click */
+// 🎁 Gift click
 document.getElementById("gift").onclick=()=>{
   const gift=document.getElementById("gift");
   gift.classList.add("open");
@@ -167,8 +170,7 @@ document.getElementById("gift").onclick=()=>{
     const video=document.getElementById("video");
     if(media){
       video.src = media;
-      video.muted = false;
-      video.load();   // 🔑 FORCE LOAD ON PC
+      video.load();
     }
 
     if(msg){
@@ -177,11 +179,24 @@ document.getElementById("gift").onclick=()=>{
   },650);
 };
 
-/* ▶️ Play button — GUARANTEED */
+// ▶️ Play click → STOP ALL ANIMATIONS
 document.getElementById("playBtn").onclick=()=>{
+  // ❌ remove sparkles
+  sparkles.forEach(s=>s.remove());
+
+  // ❌ remove falling hearts
+  falls.forEach(f=>f.remove());
+
+  // ❌ stop CSS animations globally
+  document.querySelectorAll("*").forEach(el=>{
+    el.style.animation="none";
+  });
+
+  // ▶️ play video
   const video=document.getElementById("video");
   video.play();
-  document.getElementById("playBtn").style.display="none";
+
+  document.getElementById("playBtn").remove();
 };
 </script>
 
