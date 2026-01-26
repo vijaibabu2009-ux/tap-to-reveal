@@ -1,140 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Tap to Reveal</title>
-
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  height: 100vh;
-  background: radial-gradient(circle at top, #1a0010, #000);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: system-ui, sans-serif;
-  color: #fff;
-}
-
-.tap-area {
-  text-align: center;
-  cursor: pointer;
-}
-
-.heart {
-  width: 90px;
-  height: 90px;
-  margin: auto;
-  background: radial-gradient(circle at 30% 30%, #ff6b9f, #e6004c);
-  clip-path: path("M45 80 C-20 30 20 -10 45 20 C70 -10 110 30 45 80 Z");
-  transition: transform 0.15s ease;
-}
-
-.heart.press {
-  transform: scale(0.9);
-}
-
-.tap-text {
-  margin-top: 12px;
-  font-size: 14px;
-  opacity: 0.85;
-}
-
-.reveal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.75);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
-}
-
-.reveal.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.reveal-content {
-  text-align: center;
-  max-width: 300px;
-  animation: fadeUp 0.6s ease forwards;
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
+  <meta charset="UTF-8" />
+  <title>Tap to Reveal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: radial-gradient(circle at top, #300018, #000);
+      color: #fff;
+      font-family: system-ui;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .heart {
+      font-size: 64px;
+      cursor: pointer;
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+  </style>
 </head>
-
 <body>
 
-<div class="tap-area" id="tapArea">
-  <div class="heart"></div>
-  <div class="tap-text">TAP TO REVEAL</div>
+<div id="box">
+  <div class="heart">❤️</div>
+  <div>Tap to Reveal</div>
 </div>
 
-<div class="reveal" id="reveal">
-  <div class="reveal-content">
-    <h2>❤️ For You</h2>
-    <p id="messageText">Loading...</p>
-  </div>
-</div>
+<audio id="audio"></audio>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDLR2viVk-4QuaEODUzcrvqIWYbWYP7WGI",
-  authDomain: "surprise-f507b.firebaseapp.com",
-  databaseURL: "https://surprise-f507b-default-rtdb.firebaseio.com",
-  projectId: "surprise-f507b",
-  storageBucket: "surprise-f507b.firebasestorage.app",
-  messagingSenderId: "1027446628296",
-  appId: "1:1027446628296:web:88fa311bd4de230375eafd"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLR2viVk-4QuAe0DUzcrvqIWYbWYP7WGI",
+    authDomain: "surprise-f507b.firebaseapp.com",
+    projectId: "surprise-f507b",
+    storageBucket: "surprise-f507b.firebasestorage.app",
+    messagingSenderId: "1027446628296",
+    appId: "1:1027446628296:web:88fa311bd4de230375eafd"
+  };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-const params = new URLSearchParams(location.search);
-const id = params.get("id");
+  const id = new URLSearchParams(location.search).get("id");
+  const box = document.getElementById("box");
+  const audio = document.getElementById("audio");
 
-const messageText = document.getElementById("messageText");
-const tapArea = document.getElementById("tapArea");
-const heart = document.querySelector(".heart");
-const reveal = document.getElementById("reveal");
+  box.onclick = async () => {
+    if (!id) return alert("Invalid link");
 
-let message = "No message found 💔";
+    const snap = await get(ref(db, "reveals/" + id));
+    if (!snap.exists()) {
+      box.innerHTML = "Invalid or expired";
+      return;
+    }
 
-if (id) {
-  const snap = await get(ref(db, "messages/" + id));
-  if (snap.exists()) {
-    message = snap.val().message;
-  }
-}
+    const data = snap.val();
+    if (data.used) {
+      box.innerHTML = "This surprise was already opened 💔";
+      return;
+    }
 
-messageText.textContent = message;
+    box.innerHTML = `<h2>${data.message}</h2>`;
+    audio.src = data.media;
+    audio.play();
 
-tapArea.addEventListener("pointerdown", () => {
-  heart.classList.add("press");
-});
-
-tapArea.addEventListener("pointerup", () => {
-  heart.classList.remove("press");
-  setTimeout(() => reveal.classList.add("show"), 250);
-});
+    await update(ref(db, "reveals/" + id), { used: true });
+  };
 </script>
 
 </body>
