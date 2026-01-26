@@ -66,7 +66,7 @@ body{
   }
 }
 
-/* 🎬 Video stage */
+/* 🎬 Stage */
 #stage{
   display:none;
   position:absolute;
@@ -87,7 +87,7 @@ video{
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:80px;
+  font-size:90px;
   color:white;
   background:rgba(0,0,0,.35);
   cursor:pointer;
@@ -114,14 +114,14 @@ video{
 <div id="gift">🎁</div>
 
 <div id="stage">
-  <video id="video" playsinline></video>
+  <video id="video" preload="auto"></video>
   <div id="playBtn">▶️</div>
 </div>
 
 <div id="msg"></div>
 
 <script>
-// 🌙 Sparkles
+/* 🌙 Sparkles */
 for(let i=0;i<35;i++){
   const s=document.createElement("div");
   s.className="sparkle";
@@ -131,13 +131,13 @@ for(let i=0;i<35;i++){
   document.body.appendChild(s);
 }
 
-// Params
+/* Params */
 const p=new URLSearchParams(location.search);
 const msg=p.get("msg");
 let media=p.get("media");
 if(media) media=decodeURIComponent(media);
 
-// 🌸 Falling hearts
+/* 🌸 Falling hearts */
 function falling(){
   const icons=["❤️","💖","🌸","🌹"];
   for(let i=0;i<28;i++){
@@ -152,7 +152,7 @@ function falling(){
   }
 }
 
-// 🎁 Gift click
+/* 🎁 Gift click */
 document.getElementById("gift").onclick=()=>{
   const gift=document.getElementById("gift");
   gift.classList.add("open");
@@ -166,18 +166,18 @@ document.getElementById("gift").onclick=()=>{
 
     const video=document.getElementById("video");
     if(media){
-      video.src=media;
-      video.muted=false;
+      video.src = media;
+      video.muted = false;
+      video.load();   // 🔑 FORCE LOAD ON PC
     }
 
     if(msg){
       document.getElementById("msg").innerText=decodeURIComponent(msg);
     }
-
   },650);
 };
 
-// ▶️ Play button (GUARANTEED)
+/* ▶️ Play button — GUARANTEED */
 document.getElementById("playBtn").onclick=()=>{
   const video=document.getElementById("video");
   video.play();
