@@ -1,131 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>Admin Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-<style>
-body{
-  font-family: Arial, sans-serif;
-  background:#f3f4f6;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-}
-
-.card{
-  background:#fff;
-  padding:25px;
-  width:95%;
-  max-width:400px;
-  border-radius:12px;
-  box-shadow:0 15px 30px rgba(0,0,0,.15);
-}
-
-h2{text-align:center;margin-bottom:20px;}
-
-textarea, select, button{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  font-size:15px;
-}
-
-textarea{
-  min-height:80px;
-  resize:vertical;
-}
-
-button{
-  background:#1f2937;
-  color:white;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-button:hover{opacity:.9;}
-
-#result{
-  margin-top:15px;
-  padding:10px;
-  background:#eef2ff;
-  word-break:break-all;
-}
-</style>
-</head>
-
-<body>
-<div class="card">
-  <h2>Create Tap-to-Reveal Link</h2>
-
-  <select id="language">
-    <option value="en">English</option>
-    <option value="ta">Tamil</option>
-  </select>
-
-  <select id="mode">
-    <option value="one">One Time</option>
-    <option value="always">Always Active</option>
-  </select>
-
-  <textarea id="message" placeholder="Paste text / YouTube / MP3 / MP4 / Drive link"></textarea>
-
-  <button id="generateBtn">Generate Link</button>
-
-  <div id="result"></div>
-</div>
-
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
-  authDomain: "tap-to-reveal.firebaseapp.com",
-  projectId: "tap-to-reveal",
-  storageBucket: "tap-to-reveal.firebasestorage.app",
-  messagingSenderId: "878205314791",
-  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
+  apiKey: "AIzaSyDLR2viVk-4QuaEODUzcrvqIWYbWYP7WGI",
+  authDomain: "surprise-f507b.firebaseapp.com",
+  databaseURL: "https://surprise-f507b-default-rtdb.firebaseio.com",
+  projectId: "surprise-f507b",
+  storageBucket: "surprise-f507b.firebasestorage.app",
+  messagingSenderId: "1027446628296",
+  appId: "1:1027446628296:web:88fa311bd4de230375eafd"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);
 
-document.getElementById("generateBtn").onclick = async () => {
+const btn = document.getElementById("generateBtn");
+const msgInput = document.getElementById("message");
+const output = document.getElementById("output");
 
-  const message = document.getElementById("message").value.trim();
-  const mode = document.getElementById("mode").value;
-  const lang = document.getElementById("language").value;
-
-  if(!message){
-    alert("Please enter message or link");
+btn.onclick = async () => {
+  const message = msgInput.value.trim();
+  if (!message) {
+    alert("Enter a message");
     return;
   }
 
-  try{
-    const docRef = await addDoc(collection(db,"links"),{
-      message: message,     // 🔑 EXACT user input
-      mode: mode,
-      language: lang,
-      revealed: false,
-      createdAt: Date.now()
-    });
+  const id = crypto.randomUUID().slice(0, 8);
 
-    const link =
-      `https://vijaibabu2009-ux.github.io/tap-to-reveal/index.html?id=${docRef.id}`;
+  await set(ref(db, "messages/" + id), {
+    message,
+    createdAt: Date.now()
+  });
 
-    document.getElementById("result").innerHTML =
-      `<b>Link generated:</b><br>
-       <a href="${link}" target="_blank">${link}</a>`;
-
-  }catch(e){
-    alert("Error: " + e.message);
-  }
+  const link = `${location.origin}/tap-to-reveal/index.html?id=${id}`;
+  output.innerHTML = `
+    <p><b>Link generated:</b></p>
+    <a href="${link}" target="_blank">${link}</a>
+  `;
 };
 </script>
-</body>
-</html>
