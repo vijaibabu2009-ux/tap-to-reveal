@@ -2,128 +2,203 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>A Little Surprise 💖</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tap to Reveal</title>
 
 <style>
-body{
-  margin:0;
-  height:100vh;
-  background:linear-gradient(180deg,#ff9a9e,#fad0c4);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-family:sans-serif;
-  overflow:hidden;
+/* ---------- RESET ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.card{
-  background:white;
-  padding:28px;
-  border-radius:20px;
-  width:90%;
-  max-width:360px;
-  text-align:center;
-  box-shadow:0 20px 40px rgba(0,0,0,.2);
+body {
+  height: 100vh;
+  background: radial-gradient(circle at top, #1a0010, #000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+  color: #fff;
 }
 
-h1{ color:#e63946; }
-
-.heart{
-  width:90px;
-  height:90px;
-  background:#ff4d6d;
-  transform:rotate(-45deg);
-  margin:20px auto;
-  position:relative;
-  cursor:pointer;
-  animation:pulse 1.3s infinite;
-}
-.heart::before,
-.heart::after{
-  content:"";
-  width:90px;
-  height:90px;
-  background:#ff4d6d;
-  border-radius:50%;
-  position:absolute;
-}
-.heart::before{ top:-45px; left:0; }
-.heart::after{ left:45px; top:0; }
-
-@keyframes pulse{
-  0%{transform:scale(1) rotate(-45deg);}
-  50%{transform:scale(1.1) rotate(-45deg);}
-  100%{transform:scale(1) rotate(-45deg);}
+/* ---------- CONTAINER ---------- */
+.container {
+  text-align: center;
 }
 
-.hidden{display:none;}
-video,audio{width:100%;border-radius:12px;margin-top:15px;}
+/* ---------- HEART ---------- */
+.heart-wrapper {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  margin: auto;
+}
+
+.heart {
+  width: 100px;
+  height: 100px;
+  margin: auto;
+  background: radial-gradient(circle at 30% 30%, #ff6b9f, #e6004c);
+  clip-path: path("M50 90 C-20 30 25 -10 50 22 C75 -10 120 30 50 90 Z");
+  transition: transform 0.12s ease-out;
+}
+
+/* press */
+.heart.press {
+  transform: scale(0.92);
+}
+
+/* heartbeat */
+.heart.beat {
+  animation: heartbeat 0.6s ease-in-out;
+}
+
+@keyframes heartbeat {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(1.15); }
+  40%  { transform: scale(1); }
+  60%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- GLOW ---------- */
+.glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.glow.active {
+  animation: glowPulse 0.6s ease-in-out forwards;
+}
+
+@keyframes glowPulse {
+  0% {
+    box-shadow: 0 0 0 rgba(255, 96, 140, 0);
+    opacity: 0;
+  }
+  50% {
+    box-shadow:
+      0 0 30px rgba(255, 96, 140, 0.7),
+      0 0 60px rgba(255, 96, 140, 0.4);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- TEXT ---------- */
+.tap-text {
+  margin-top: 18px;
+  font-size: 14px;
+  opacity: 0.8;
+  letter-spacing: 1px;
+}
+
+/* ---------- REVEAL ---------- */
+.reveal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.reveal.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.reveal-content {
+  text-align: center;
+  animation: fadeUp 0.6s ease forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal h1 {
+  font-size: 26px;
+  margin-bottom: 10px;
+}
+
+.reveal p {
+  font-size: 15px;
+  opacity: 0.85;
+}
 </style>
 </head>
 
 <body>
-<div class="card">
-  <h1>A Little Surprise 💝</h1>
-  <p id="hint">Tap the heart ❤️</p>
 
-  <div class="heart" id="revealBtn"></div>
-
-  <div id="content" class="hidden"></div>
-  <small>Made with love ✨</small>
+<div class="container">
+  <div class="heart-wrapper">
+    <div class="glow"></div>
+    <div class="heart"></div>
+  </div>
+  <div class="tap-text">TAP TO REVEAL</div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<div class="reveal">
+  <div class="reveal-content">
+    <h1>❤️ For You</h1>
+    <p>This was worth the tap.</p>
+  </div>
+</div>
 
-const firebaseConfig = {
- apiKey: "AIzaSyDAlt16C36DGhonXf10URIhz82LroH2k3A",
-  authDomain: "tap-to-reveal.firebaseapp.com",
-  projectId: "tap-to-reveal",
-  storageBucket: "tap-to-reveal.firebasestorage.app",
-  messagingSenderId: "878205314791",
-  appId: "1:878205314791:web:ce3c831e7075c27ca8a442"
-};
+<script>
+const heart = document.querySelector(".heart");
+const glow = document.querySelector(".glow");
+const reveal = document.querySelector(".reveal");
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+let triggered = false;
 
-const id = new URLSearchParams(window.location.search).get("id");
-const content = document.getElementById("content");
-const btn = document.getElementById("revealBtn");
+// touch start
+heart.addEventListener("touchstart", () => {
+  if (triggered) return;
+  heart.classList.add("press");
+});
 
-btn.onclick = async () => {
-  const snap = await getDoc(doc(db,"links",id));
-  if(!snap.exists()) return;
+// touch end
+heart.addEventListener("touchend", () => {
+  if (triggered) return;
+  triggered = true;
 
-  const msg = snap.data().message;
+  heart.classList.remove("press");
 
-  document.getElementById("hint").remove();
-  btn.remove();
-  content.classList.remove("hidden");
-
-  // 🔹 MEDIA AUTO-DETECTION
-  if(msg.match(/\.(mp3|wav)$/)){
-    content.innerHTML = `<audio controls autoplay src="${msg}"></audio>`;
-  }
-  else if(msg.includes("youtube.com") || msg.includes("youtu.be")){
-    const vid = msg.split("v=")[1]?.split("&")[0] || msg.split("/").pop();
-    content.innerHTML =
-      `<video controls autoplay>
-        <source src="https://www.youtube.com/embed/${vid}">
-      </video>
-      <p><a href="${msg}" target="_blank">Open video ❤️</a></p>`;
-  }
-  else if(msg.match(/\.(mp4|webm)$/)){
-    content.innerHTML = `<video controls autoplay src="${msg}"></video>`;
-  }
-  else{
-    content.innerHTML = `<p style="font-size:18px">${msg} 💖</p>`;
+  // vibration (optional)
+  if (navigator.vibrate) {
+    navigator.vibrate([30, 60, 30]);
   }
 
-  await updateDoc(doc(db,"links",id),{ revealed:true });
-};
-</script>
-</body>
-</html>
+  // anticipation pause
+  setTimeout(() => {
+    heart.classList.add("beat");
+    glow.classList.add("active");
+  }, 80);
+
+  // reveal
+  setTimeout(() => {
+    reveal.classList.add("show");
+  }, 900);
+});
+</sc
