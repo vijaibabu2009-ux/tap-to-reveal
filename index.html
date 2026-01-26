@@ -2,30 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Tap to Reveal</title>
+<title>Tap to Reveal ❤️</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
   height:100vh;
+  background:radial-gradient(circle at top,#2a0015,#000);
   display:flex;
-  justify-content:center;
   align-items:center;
-  background:radial-gradient(circle,#1a001f,#000);
-  overflow:hidden;
+  justify-content:center;
   font-family:system-ui;
+  overflow:hidden;
 }
+
 #heart{
   font-size:80px;
   cursor:pointer;
   animation:pulse 1.4s infinite;
 }
+
 @keyframes pulse{
   0%{transform:scale(1)}
   50%{transform:scale(1.25)}
   100%{transform:scale(1)}
 }
+
 #content{
   display:none;
   position:absolute;
@@ -34,16 +37,19 @@ body{
   color:white;
   text-align:center;
 }
+
 video{
   width:100%;
   height:100%;
   object-fit:cover;
 }
-.message{
+
+#msg{
   position:absolute;
   bottom:20px;
   width:100%;
   font-size:22px;
+  padding:0 10px;
 }
 </style>
 </head>
@@ -53,8 +59,8 @@ video{
 <div id="heart">❤️</div>
 
 <div id="content">
-  <video id="vid" controls playsinline></video>
-  <div class="message" id="msg"></div>
+  <video id="video" playsinline controls></video>
+  <div id="msg"></div>
 </div>
 
 <script>
@@ -63,15 +69,15 @@ const msg = params.get("msg");
 let media = params.get("media");
 
 if(media){
-  media = decodeURIComponent(media); // 🔑 IMPORTANT
+  media = decodeURIComponent(media);
 }
 
-document.getElementById("heart").onclick = ()=>{
-  document.getElementById("heart").style.display="none";
-  document.getElementById("content").style.display="block";
+document.getElementById("heart").onclick = () => {
+  document.getElementById("heart").style.display = "none";
+  document.getElementById("content").style.display = "block";
 
   if(media){
-    const v = document.getElementById("vid");
+    const v = document.getElementById("video");
     v.src = media;
     v.muted = false;
     v.play(); // autoplay after tap
