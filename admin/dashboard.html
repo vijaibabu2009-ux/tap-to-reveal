@@ -1,3 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard</title>
+
+<style>
+body {
+  font-family: system-ui, sans-serif;
+  background: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.card {
+  background: #fff;
+  padding: 24px;
+  width: 320px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+textarea {
+  width: 100%;
+  height: 90px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  background: #111827;
+  color: #fff;
+  cursor: pointer;
+}
+
+#output {
+  margin-top: 14px;
+  font-size: 13px;
+  word-break: break-all;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>Create Tap-to-Reveal</h2>
+  <textarea id="message" placeholder="Type your message here..."></textarea>
+  <button id="generateBtn">Generate Link</button>
+  <div id="output"></div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -15,13 +81,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const btn = document.getElementById("generateBtn");
-const msgInput = document.getElementById("message");
-const output = document.getElementById("output");
+document.getElementById("generateBtn").onclick = async () => {
+  const msg = document.getElementById("message").value.trim();
+  const output = document.getElementById("output");
 
-btn.onclick = async () => {
-  const message = msgInput.value.trim();
-  if (!message) {
+  if (!msg) {
     alert("Enter a message");
     return;
   }
@@ -29,14 +93,18 @@ btn.onclick = async () => {
   const id = crypto.randomUUID().slice(0, 8);
 
   await set(ref(db, "messages/" + id), {
-    message,
+    message: msg,
     createdAt: Date.now()
   });
 
   const link = `${location.origin}/tap-to-reveal/index.html?id=${id}`;
+
   output.innerHTML = `
-    <p><b>Link generated:</b></p>
+    <b>Link generated:</b><br>
     <a href="${link}" target="_blank">${link}</a>
   `;
 };
 </script>
+
+</body>
+</html>
