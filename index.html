@@ -24,23 +24,18 @@ body {
   color: #fff;
 }
 
-/* ---------- CONTAINER ---------- */
 .container {
   text-align: center;
 }
 
-/* ---------- TAP AREA ---------- */
 .tap-area {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 22px;
   cursor: pointer;
-  user-select: none;
 }
 
-/* ---------- HEART ---------- */
 .heart-wrapper {
   position: relative;
   width: 110px;
@@ -55,25 +50,20 @@ body {
   transition: transform 0.12s ease-out;
 }
 
-/* press */
-.heart.press {
-  transform: scale(0.92);
-}
+.heart.press { transform: scale(0.92); }
 
-/* heartbeat */
 .heart.beat {
   animation: heartbeat 0.6s ease-in-out;
 }
 
 @keyframes heartbeat {
-  0%   { transform: scale(1); }
-  20%  { transform: scale(1.15); }
-  40%  { transform: scale(1); }
-  60%  { transform: scale(1.12); }
+  0% { transform: scale(1); }
+  20% { transform: scale(1.15); }
+  40% { transform: scale(1); }
+  60% { transform: scale(1.12); }
   100% { transform: scale(1); }
 }
 
-/* ---------- GLOW ---------- */
 .glow {
   position: absolute;
   inset: 0;
@@ -94,7 +84,6 @@ body {
   }
 }
 
-/* ---------- TEXT ---------- */
 .tap-text {
   margin-top: 14px;
   font-size: 14px;
@@ -102,11 +91,11 @@ body {
   letter-spacing: 1px;
 }
 
-/* ---------- REVEAL OVERLAY ---------- */
+/* Reveal */
 .reveal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0,0,0,0.75);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -121,7 +110,6 @@ body {
   pointer-events: auto;
 }
 
-/* ---------- REVEAL CONTENT ---------- */
 .reveal-content {
   text-align: center;
   opacity: 0;
@@ -140,8 +128,11 @@ body {
 }
 
 .reveal p {
-  font-size: 15px;
-  opacity: 0.9;
+  font-size: 16px;
+  opacity: 0.95;
+  max-width: 300px;
+  margin: auto;
+  line-height: 1.4;
 }
 </style>
 </head>
@@ -149,7 +140,7 @@ body {
 <body>
 
 <div class="container">
-  <div class="tap-area" id="tapArea" aria-label="Tap to reveal">
+  <div class="tap-area" id="tapArea">
     <div class="heart-wrapper">
       <div class="glow"></div>
       <div class="heart"></div>
@@ -161,7 +152,7 @@ body {
 <div class="reveal" id="reveal">
   <div class="reveal-content">
     <h1>❤️ For You</h1>
-    <p>This message is now guaranteed to appear.</p>
+    <p id="messageText">Loading...</p>
   </div>
 </div>
 
@@ -170,12 +161,23 @@ const tapArea = document.getElementById("tapArea");
 const heart = document.querySelector(".heart");
 const glow = document.querySelector(".glow");
 const reveal = document.getElementById("reveal");
+const messageText = document.getElementById("messageText");
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+let message = null;
+
+if (id) {
+  message = localStorage.getItem("tap_" + id);
+}
+
+messageText.textContent = message || "Someone made this just for you 💖";
 
 let triggered = false;
 
 tapArea.addEventListener("pointerdown", () => {
-  if (triggered) return;
-  heart.classList.add("press");
+  if (!triggered) heart.classList.add("press");
 });
 
 tapArea.addEventListener("pointerup", () => {
