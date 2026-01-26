@@ -2,76 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>A Gift for You ❤️</title>
+<title>Video Reveal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body{
   margin:0;
   height:100vh;
-  background:radial-gradient(circle at top,#14000c,#000);
+  background:black;
   display:flex;
   align-items:center;
   justify-content:center;
   font-family:system-ui;
-  overflow:hidden;
 }
 
-/* 🌙 Sparkles */
-.sparkle{
-  position:fixed;
-  width:5px;
-  height:5px;
-  background:white;
-  border-radius:50%;
-  opacity:.6;
-  animation:twinkle 3s infinite;
-}
-@keyframes twinkle{
-  0%,100%{opacity:.2}
-  50%{opacity:1}
-}
-
-/* 🎁 Gift */
-#gift{
-  font-size:88px;
-  cursor:pointer;
-  animation:bounce 1.8s infinite;
-  z-index:5;
-}
-@keyframes bounce{
-  0%{transform:translateY(0)}
-  50%{transform:translateY(-14px)}
-  100%{transform:translateY(0)}
-}
-.open{
-  animation:openBox .7s forwards;
-}
-@keyframes openBox{
-  to{transform:scale(2);opacity:0}
-}
-
-/* 🌸 Falling hearts */
-.fall{
-  position:fixed;
-  top:-10%;
-  font-size:24px;
-  pointer-events:none;
-  animation:fall linear forwards;
-}
-@keyframes fall{
-  to{
-    transform:translateY(120vh) rotate(360deg);
-    opacity:0;
-  }
-}
-
-/* 🎬 Stage */
-#stage{
-  display:none;
-  position:absolute;
-  inset:0;
-  background:black;
+#container{
+  position:relative;
+  width:100%;
+  height:100%;
 }
 
 video{
@@ -89,114 +37,35 @@ video{
   justify-content:center;
   font-size:90px;
   color:white;
-  background:rgba(0,0,0,.35);
+  background:rgba(0,0,0,.4);
   cursor:pointer;
-  z-index:10;
-}
-
-/* 💌 Message */
-#msg{
-  position:absolute;
-  bottom:22px;
-  width:100%;
-  text-align:center;
-  font-size:22px;
-  color:white;
-  text-shadow:0 2px 8px rgba(0,0,0,.7);
-  padding:0 10px;
-  z-index:20;
 }
 </style>
 </head>
 
 <body>
 
-<div id="gift">🎁</div>
-
-<div id="stage">
-  <video id="video" preload="auto" playsinline></video>
+<div id="container">
+  <video id="video" playsinline preload="auto"></video>
   <div id="playBtn">▶️</div>
 </div>
 
-<div id="msg"></div>
-
 <script>
-// 🌙 Sparkles (tracked)
-const sparkles=[];
-for(let i=0;i<35;i++){
-  const s=document.createElement("div");
-  s.className="sparkle";
-  s.style.left=Math.random()*100+"vw";
-  s.style.top=Math.random()*100+"vh";
-  s.style.animationDelay=Math.random()*3+"s";
-  document.body.appendChild(s);
-  sparkles.push(s);
+const params = new URLSearchParams(window.location.search);
+let media = params.get("media");
+
+if(media){
+  media = decodeURIComponent(media);
+  const video = document.getElementById("video");
+  video.src = media;
+  video.load();
 }
 
-// Params
-const p=new URLSearchParams(location.search);
-const msg=p.get("msg");
-let media=p.get("media");
-if(media) media=decodeURIComponent(media);
-
-// 🌸 Falling hearts (tracked)
-const falls=[];
-function falling(){
-  const icons=["❤️","💖","🌸","🌹"];
-  for(let i=0;i<28;i++){
-    const el=document.createElement("div");
-    el.className="fall";
-    el.textContent=icons[Math.floor(Math.random()*icons.length)];
-    el.style.left=Math.random()*100+"vw";
-    el.style.fontSize=20+Math.random()*28+"px";
-    el.style.animationDuration=(4+Math.random()*3)+"s";
-    document.body.appendChild(el);
-    falls.push(el);
-  }
-}
-
-// 🎁 Gift click
-document.getElementById("gift").onclick=()=>{
-  const gift=document.getElementById("gift");
-  gift.classList.add("open");
-  falling();
-
-  setTimeout(()=>{
-    gift.remove();
-
-    const stage=document.getElementById("stage");
-    stage.style.display="block";
-
-    const video=document.getElementById("video");
-    if(media){
-      video.src = media;
-      video.load();
-    }
-
-    if(msg){
-      document.getElementById("msg").innerText=decodeURIComponent(msg);
-    }
-  },650);
-};
-
-// ▶️ Play click → STOP ALL ANIMATIONS
-document.getElementById("playBtn").onclick=()=>{
-  // ❌ remove sparkles
-  sparkles.forEach(s=>s.remove());
-
-  // ❌ remove falling hearts
-  falls.forEach(f=>f.remove());
-
-  // ❌ stop CSS animations globally
-  document.querySelectorAll("*").forEach(el=>{
-    el.style.animation="none";
-  });
-
-  // ▶️ play video
-  const video=document.getElementById("video");
+// ▶️ Play (WORKS ON PC + MOBILE)
+document.getElementById("playBtn").onclick = () => {
+  const video = document.getElementById("video");
   video.play();
-
-  document.getElementById("playBtn").remove();
+  document.getElementById("playBtn").style.display = "none";
 };
 </script>
 
