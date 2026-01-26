@@ -6,7 +6,6 @@
 <title>Tap to Reveal</title>
 
 <style>
-/* ---------- RESET ---------- */
 * {
   margin: 0;
   padding: 0;
@@ -30,18 +29,26 @@ body {
   text-align: center;
 }
 
+/* ---------- TAP AREA ---------- */
+.tap-area {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  cursor: pointer;
+}
+
 /* ---------- HEART ---------- */
 .heart-wrapper {
   position: relative;
   width: 110px;
   height: 110px;
-  margin: auto;
 }
 
 .heart {
   width: 100px;
   height: 100px;
-  margin: auto;
   background: radial-gradient(circle at 30% 30%, #ff6b9f, #e6004c);
   clip-path: path("M50 90 C-20 30 25 -10 50 22 C75 -10 120 30 50 90 Z");
   transition: transform 0.12s ease-out;
@@ -78,26 +85,19 @@ body {
 }
 
 @keyframes glowPulse {
-  0% {
-    box-shadow: 0 0 0 rgba(255, 96, 140, 0);
-    opacity: 0;
-  }
   50% {
     box-shadow:
       0 0 30px rgba(255, 96, 140, 0.7),
       0 0 60px rgba(255, 96, 140, 0.4);
     opacity: 1;
   }
-  100% {
-    opacity: 0;
-  }
 }
 
 /* ---------- TEXT ---------- */
 .tap-text {
-  margin-top: 18px;
+  margin-top: 14px;
   font-size: 14px;
-  opacity: 0.8;
+  opacity: 0.85;
   letter-spacing: 1px;
 }
 
@@ -135,27 +135,19 @@ body {
     transform: translateY(0);
   }
 }
-
-.reveal h1 {
-  font-size: 26px;
-  margin-bottom: 10px;
-}
-
-.reveal p {
-  font-size: 15px;
-  opacity: 0.85;
-}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <div class="heart-wrapper">
-    <div class="glow"></div>
-    <div class="heart"></div>
+  <div class="tap-area" id="tapArea" aria-label="Tap to reveal">
+    <div class="heart-wrapper">
+      <div class="glow"></div>
+      <div class="heart"></div>
+    </div>
+    <div class="tap-text">TAP TO REVEAL</div>
   </div>
-  <div class="tap-text">TAP TO REVEAL</div>
 </div>
 
 <div class="reveal">
@@ -166,39 +158,38 @@ body {
 </div>
 
 <script>
+const tapArea = document.getElementById("tapArea");
 const heart = document.querySelector(".heart");
 const glow = document.querySelector(".glow");
 const reveal = document.querySelector(".reveal");
 
 let triggered = false;
 
-// touch start
-heart.addEventListener("touchstart", () => {
+tapArea.addEventListener("pointerdown", () => {
   if (triggered) return;
   heart.classList.add("press");
 });
 
-// touch end
-heart.addEventListener("touchend", () => {
+tapArea.addEventListener("pointerup", () => {
   if (triggered) return;
   triggered = true;
 
   heart.classList.remove("press");
 
-  // vibration (optional)
   if (navigator.vibrate) {
     navigator.vibrate([30, 60, 30]);
   }
 
-  // anticipation pause
   setTimeout(() => {
     heart.classList.add("beat");
     glow.classList.add("active");
   }, 80);
 
-  // reveal
   setTimeout(() => {
     reveal.classList.add("show");
   }, 900);
 });
-</sc
+</script>
+
+</body>
+</html>
