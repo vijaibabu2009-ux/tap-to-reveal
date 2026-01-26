@@ -1,56 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
 <title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
 body {
   font-family: system-ui, sans-serif;
-  background: #f4f4f4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  background:#f4f4f4;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
 }
-
 .card {
-  background: #fff;
-  padding: 24px;
-  width: 320px;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  background:#fff;
+  padding:22px;
+  width:360px;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
 }
-
-h2 {
-  text-align: center;
-  margin-bottom: 16px;
+textarea, input[type=file] {
+  width:100%;
+  margin-top:10px;
 }
-
-textarea {
-  width: 100%;
-  height: 90px;
-  padding: 10px;
-  font-size: 14px;
-}
-
 button {
-  width: 100%;
-  margin-top: 12px;
-  padding: 10px;
-  font-size: 15px;
-  border: none;
-  border-radius: 6px;
-  background: #111827;
-  color: #fff;
-  cursor: pointer;
+  width:100%;
+  margin-top:14px;
+  padding:10px;
+  background:#111827;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
 }
-
 #output {
-  margin-top: 14px;
-  font-size: 13px;
-  word-break: break-all;
+  margin-top:12px;
+  font-size:13px;
+  word-break:break-all;
 }
 </style>
 </head>
@@ -58,51 +46,65 @@ button {
 <body>
 
 <div class="card">
-  <h2>Create Tap-to-Reveal</h2>
+  <h3>Create Tap-to-Reveal</h3>
+
+  <!-- MESSAGE -->
   <textarea id="message" placeholder="Type your message here..."></textarea>
+
+  <!-- 🔥 FILE UPLOAD (THIS WAS MISSING) -->
+  <input type="file" id="mediaFile" accept="audio/*,video/*">
+
   <button id="generateBtn">Generate Link</button>
+
   <div id="output"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDLR2viVk-4QuaEODUzcrvqIWYbWYP7WGI",
   authDomain: "surprise-f507b.firebaseapp.com",
   databaseURL: "https://surprise-f507b-default-rtdb.firebaseio.com",
   projectId: "surprise-f507b",
-  storageBucket: "surprise-f507b.firebasestorage.app",
+  storageBucket: "surprise-f507b.appspot.com",
   messagingSenderId: "1027446628296",
   appId: "1:1027446628296:web:88fa311bd4de230375eafd"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const storage = getStorage(app);
 
-document.getElementById("generateBtn").onclick = async () => {
-  const msg = document.getElementById("message").value.trim();
-  const output = document.getElementById("output");
+generateBtn.onclick = async () => {
+  const msg = message.value.trim();
+  const file = mediaFile.files[0];
 
-  if (!msg) {
-    alert("Enter a message");
-    return;
+  if (!msg) return alert("Enter a message");
+
+  const id = crypto.randomUUID().slice(0,8);
+  let mediaURL = null;
+  let mediaType = null;
+
+  if (file) {
+    mediaType = file.type.startsWith("video") ? "video" : "audio";
+    const fileRef = sRef(storage, `media/${id}_${file.name}`);
+    await uploadBytes(fileRef, file);
+    mediaURL = await getDownloadURL(fileRef);
   }
-
-  const id = crypto.randomUUID().slice(0, 8);
 
   await set(ref(db, "messages/" + id), {
     message: msg,
+    mediaURL,
+    mediaType,
+    used: false,
     createdAt: Date.now()
   });
 
   const link = `${location.origin}/tap-to-reveal/index.html?id=${id}`;
-
-  output.innerHTML = `
-    <b>Link generated:</b><br>
-    <a href="${link}" target="_blank">${link}</a>
-  `;
+  output.innerHTML = `<b>Link:</b><br><a href="${link}" target="_blank">${link}</a>`;
 };
 </script>
 
